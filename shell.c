@@ -52,7 +52,6 @@ void print_greetings(void){
 }
 
 int main(void){
-    printf("\n");
     print_greetings();
     return 0;
 }
