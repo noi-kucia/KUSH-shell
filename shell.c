@@ -58,18 +58,18 @@ void print_greetings(void){
     cprintnl(R"edge(   \    /\    /    |  |____ |  `----.|  `----.|  `--'  | |  |  |  | |  |____ )edge", Colors.PURPLE);
     cprintnl(R"edge(    \__/  \__/     |_______||_______| \______| \______/  |__|  |__| |_______|)edge", Colors.PURPLE);
     cprintnl(R"edge(                                                                             )edge", Colors.PURPLE);
-    cprintnl(R"edge(.___________.  ______                __  ___      _______. __    __       __ )edge", Colors.PURPLE);
-    cprintnl(R"edge(|           | /  __  \              |  |/  /     /       ||  |  |  |     |  |)edge", Colors.PURPLE);
-    cprintnl(R"edge(`---|  |----`|  |  |  |             |  '  /     |   (----`|  |__|  |     |  |)edge", Colors.PURPLE);
-    cprintnl(R"edge(    |  |     |  |  |  |             |    <       \   \    |   __   |     |  |)edge", Colors.PURPLE);
-    cprintnl(R"edge(    |  |     |  `--'  |             |  .  \  .----)   |   |  |  |  |     |__|)edge", Colors.PURPLE);
-    cprintnl(R"edge(    |__|      \______/              |__|\__\ |_______/    |__|  |__|     (__))edge", Colors.PURPLE);
+    cprintnl(R"edge(.___________.  ______        __  ___  __    __       _______. __    __    __ )edge", Colors.PURPLE);
+    cprintnl(R"edge(|           | /  __  \      |  |/  / |  |  |  |     /       ||  |  |  |  |  |)edge", Colors.PURPLE);
+    cprintnl(R"edge(`---|  |----`|  |  |  |     |  '  /  |  |  |  |    |   (----`|  |__|  |  |  |)edge", Colors.PURPLE);
+    cprintnl(R"edge(    |  |     |  |  |  |     |    <   |  |  |  |     \   \    |   __   |  |  |)edge", Colors.PURPLE);
+    cprintnl(R"edge(    |  |     |  `--'  |     |  .  \  |  `--'  | .----)   |   |  |  |  |  |__|)edge", Colors.PURPLE);
+    cprintnl(R"edge(    |__|      \______/      |__|\__\  \______/  |_______/    |__|  |__|  (__))edge", Colors.PURPLE);
     cprintnl(R"edge(                                                                             )edge", Colors.PURPLE);
     cprintnl(R"edge(-----------------------------------------------------------------------------)edge", Colors.PURPLE);
     printf(" \n");
 }
 
-int ksh_loop() {
+int kush_loop() {
 
     // allocating a buffer to read the user input
     char* read_buff = malloc(READ_BUFFER_SIZE);
@@ -87,5 +87,5 @@ int main(void){
     print_greetings();
 
     // entering the loop
-    return ksh_loop();
+    return kush_loop();
 }
