@@ -48,12 +48,12 @@ void print_greetings(void){
     cprintnl(R"edge(   \    /\    /    |  |____ |  `----.|  `----.|  `--'  | |  |  |  | |  |____ )edge", Colors.PURPLE);
     cprintnl(R"edge(    \__/  \__/     |_______||_______| \______| \______/  |__|  |__| |_______|)edge", Colors.PURPLE);
     cprintnl(R"edge(                                                                             )edge", Colors.PURPLE);
-    cprintnl(R"edge(.___________.  ______         __  ___      _______. __    __       __        )edge", Colors.PURPLE);
-    cprintnl(R"edge(|           | /  __  \       |  |/  /     /       ||  |  |  |     |  |       )edge", Colors.PURPLE);
-    cprintnl(R"edge(`---|  |----`|  |  |  |      |  '  /     |   (----`|  |__|  |     |  |       )edge", Colors.PURPLE);
-    cprintnl(R"edge(    |  |     |  |  |  |      |    <       \   \    |   __   |     |  |       )edge", Colors.PURPLE);
-    cprintnl(R"edge(    |  |     |  `--'  |      |  .  \  .----)   |   |  |  |  |     |__|       )edge", Colors.PURPLE);
-    cprintnl(R"edge(    |__|      \______/       |__|\__\ |_______/    |__|  |__|     (__)       )edge", Colors.PURPLE);
+    cprintnl(R"edge(.___________.  ______                __  ___      _______. __    __       __ )edge", Colors.PURPLE);
+    cprintnl(R"edge(|           | /  __  \              |  |/  /     /       ||  |  |  |     |  |)edge", Colors.PURPLE);
+    cprintnl(R"edge(`---|  |----`|  |  |  |             |  '  /     |   (----`|  |__|  |     |  |)edge", Colors.PURPLE);
+    cprintnl(R"edge(    |  |     |  |  |  |             |    <       \   \    |   __   |     |  |)edge", Colors.PURPLE);
+    cprintnl(R"edge(    |  |     |  `--'  |             |  .  \  .----)   |   |  |  |  |     |__|)edge", Colors.PURPLE);
+    cprintnl(R"edge(    |__|      \______/              |__|\__\ |_______/    |__|  |__|     (__))edge", Colors.PURPLE);
     cprintnl(R"edge(                                                                             )edge", Colors.PURPLE);
     cprintnl(R"edge(-----------------------------------------------------------------------------)edge", Colors.PURPLE);
     printf("\n");
