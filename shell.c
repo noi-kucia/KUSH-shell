@@ -1,6 +1,6 @@
 /*
-The microshell project
-made by Artur Pozniak
+The microshell project 'KUSh' - KUCIA's Shell
+made by Artur Pozniak aka KUCIA
 
 TODO: anything...
 */
