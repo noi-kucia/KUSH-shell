@@ -15,6 +15,8 @@ TODO: anything...
 #include <locale.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
+#include <math.h>
 
 #define READ_BUFFER_SIZE 1024
 
@@ -69,6 +71,15 @@ void print_greetings(void){
     printf(" \n");
 }
 
+void prompt() {
+    // prints a prompt
+
+    char* username = getlogin();
+    char* hostname = "localhost";
+    char* path = "PATH";
+    printf("%s@%s->%s $", username, hostname, path);
+}
+
 int kush_loop() {
 
     // allocating a buffer to read the user input
@@ -77,6 +88,8 @@ int kush_loop() {
         error_message("Unable to allocate memory for read buffer");
         return -1;
     }
+
+    prompt();
 
     return 0;
 }
