@@ -2,7 +2,9 @@
 The microshell project 'KUSh' - KUCIA's Shell
 made by Artur Pozniak aka KUCIA
 
-TODO: anything...
+BAJERY:
+1) when path length in prompt exceeds maximal value, it's getting truncated;
+   Also the home path is replaced by ~ automatically
 */
 
 
@@ -17,6 +19,9 @@ TODO: anything...
 #include <unistd.h>
 #include <time.h>
 #include <math.h>
+#include <regex.h>
+#include <stdbool.h>
+#include <errno.h>
 
 #define READ_BUFFER_SIZE 1024
 
@@ -29,14 +34,19 @@ typedef struct{
     const char* PURPLE;
     const char* YELLOW;
     const char* CYAN;
+    const char* BLUE;
+    const char* CLEAR;
 } colors_t;
 
-colors_t Colors = {"\x1b[0;37m", "\x1b[0;30m", "\x1b[0;31m", "\x1b[0;32m", "\x1b[0;35m", "\x1b[0;33m", "\x1b[0;36m"};
+colors_t Colors = {"\x1b[0;37m",
+    "\x1b[0;30m", "\x1b[0;31m", "\x1b[0;32m", "\x1b[0;35m", "\x1b[0;33m",
+    "\x1b[0;36m", "\x1b[34m", "\x1b[0;37m"};
+const char* HOME_PATH = "";  // is set in prepare function; does not contain last slash
 
 // helper functions and methods
 void cprint(const char* text, const char* color){
     // function used to print text with certain color
-    printf("%s%s%s", color, text, Colors.WHITE);
+    printf("%s%s%s", color, text, Colors.CLEAR);
 }
 
 void cprintnl(const char* text, const char* color){
@@ -72,12 +82,63 @@ void print_greetings(void){
 }
 
 void prompt() {
-    // prints a prompt
+    /*     prints a prompt */
 
+    // getting user and host names
     char* username = getlogin();
-    char* hostname = "localhost";
-    char* path = "PATH";
-    printf("%s@%s->%s $", username, hostname, path);
+    char* hostname = malloc(64);
+    gethostname(hostname, 64);
+
+    // getting a path into the buffer
+    uint16_t path_max_size = 64;
+    uint_fast16_t buff_size = path_max_size;
+    char* path = malloc(path_max_size);
+    char* buff = malloc(buff_size);
+    if (path==nullptr||buff==nullptr) {
+        error_message("Failed to allocate memory for the shell command prompt");
+        return;
+    }
+    for (uint8_t iteration=1;iteration<=11;iteration++){
+        char* res = getcwd(buff, buff_size);
+        if (res==NULL && errno==ERANGE) {// if the path is longer than max size
+            free(buff);
+            buff_size *= 2;
+            buff = malloc(buff_size);
+            if (buff==nullptr) {
+                error_message("Failed to allocate memory for the buffer");
+                break;
+            }
+        }
+        else {
+            break;
+        };
+    }
+
+    // replacing home path by ~
+    if (strncmp(HOME_PATH, buff, strlen(HOME_PATH))==0){
+        buff[0] = '~';
+        for (int i=0;i<strlen(HOME_PATH);i++) {
+            buff[i+1] = buff[strlen(HOME_PATH+i)];
+        }
+    }
+
+    // truncating path if needed or just copying buffer to path
+    if (strlen(buff)>path_max_size) {
+        strncpy(path, "...", path_max_size);
+        char* start_index = strrchr(buff, '/');
+        strncpy(path+3, start_index, path_max_size-4);
+    }
+    else strncpy(path, buff, path_max_size);
+
+
+
+
+
+    // printing a result
+    printf("%s@%s-> %s%s%s$", username, hostname, Colors.BLUE, path, Colors.CLEAR);
+
+    free(buff);
+    free(path);
 }
 
 int kush_loop() {
@@ -94,9 +155,13 @@ int kush_loop() {
     return 0;
 }
 
+void prepare() {
+    HOME_PATH = getenv("HOME");
+}
 
 int main(void){
     setlocale(LC_ALL, "");  // Set locale to the user's default
+    prepare();
     print_greetings();
 
     // entering the loop
