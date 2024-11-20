@@ -142,13 +142,17 @@ void prompt() {
 int kush_loop() {
 
     // allocating a buffer to read the user input
-    char* read_buff = malloc(READ_BUFFER_SIZE);
+    size_t buffer_size = READ_BUFFER_SIZE;
+    char* read_buff = malloc(buffer_size);
     if (read_buff == nullptr) {
         error_message("Unable to allocate memory for read buffer");
         return -1;
     }
 
-    prompt();
+    while (true) {
+        prompt();
+        getline(&read_buff, &buffer_size, stdin);
+    }
 
     return 0;
 }
