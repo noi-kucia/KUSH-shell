@@ -114,12 +114,10 @@ void prompt() {
         };
     }
 
-    // replacing home path by ~
+    // replacing a home path by ~
     if (strncmp(HOME_PATH, buff, strlen(HOME_PATH))==0){
         buff[0] = '~';
-        for (int i=0;i<strlen(HOME_PATH);i++) {
-            buff[i+1] = buff[strlen(HOME_PATH+i)];
-        }
+        strlcpy(buff+1, buff+strlen(HOME_PATH), buff_size-1);
     }
 
     // truncating path if needed or just copying buffer to path
