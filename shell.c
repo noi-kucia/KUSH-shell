@@ -139,6 +139,13 @@ void prompt() {
     free(path);
 }
 
+char*  read_user_command(char *buff, size_t *buffer_size) {
+    /* reads the user input */
+
+    getline(&buff, buffer_size, stdin);
+    return buff;
+}
+
 int kush_loop() {
 
     // allocating a buffer to read the user input
@@ -150,8 +157,14 @@ int kush_loop() {
     }
 
     while (true) {
-        prompt();
-        getline(&read_buff, &buffer_size, stdin);
+        prompt(); // printing the prompt
+        read_user_command(read_buff, &buffer_size); // reading command
+        // parsing command
+        // executing command
+
+        //debug
+        printf("got command: ");
+        cprint(read_buff, Colors.CYAN);
     }
 
     return 0;
