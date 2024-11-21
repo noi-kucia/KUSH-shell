@@ -101,9 +101,8 @@ void prompt() {
     for (uint8_t iteration=1;iteration<=11;iteration++){
         char* res = getcwd(buff, buff_size);
         if (res==NULL && errno==ERANGE) {// if the path is longer than max size
-            free(buff);
             buff_size *= 2;
-            buff = malloc(buff_size);
+            buff = realloc(buff, buff_size);
             if (buff==nullptr) {
                 error_message("Failed to allocate memory for the buffer");
                 break;
@@ -139,17 +138,16 @@ void prompt() {
     free(path);
 }
 
-char*  read_user_command(char *buff, size_t *buffer_size) {
+size_t  read_user_command(char *buff, size_t *buffer_size) {
     /* reads the user input */
-
-    getline(&buff, buffer_size, stdin);
-    return buff;
+    return getline(&buff, buffer_size, stdin);;
 }
 
 int kush_loop() {
 
     // allocating a buffer to read the user input
     size_t buffer_size = READ_BUFFER_SIZE;
+    size_t input_len = 0;
     char* read_buff = malloc(buffer_size);
     if (read_buff == nullptr) {
         error_message("Unable to allocate memory for read buffer");
@@ -158,7 +156,8 @@ int kush_loop() {
 
     while (true) {
         prompt(); // printing the prompt
-        read_user_command(read_buff, &buffer_size); // reading command
+        input_len = read_user_command(read_buff, &buffer_size); // reading command
+        read_buff[input_len-1] = '\0';  // removing the last nl character
         // parsing command
         // executing command
 
