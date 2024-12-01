@@ -7,7 +7,7 @@ BAJERY:
    Also the home path is replaced by ~ automatically
 */
 
-
+// standard libs
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -22,6 +22,9 @@ BAJERY:
 #include <regex.h>
 #include <stdbool.h>
 #include <errno.h>
+
+// local includes
+#include "tokens.h"
 
 #define READ_BUFFER_SIZE 1024
 
@@ -143,6 +146,9 @@ size_t  read_user_command(char *buff, size_t *buffer_size) {
     return getline(&buff, buffer_size, stdin);;
 }
 
+
+void parse();
+
 int kush_loop() {
 
     // allocating a buffer to read the user input
@@ -158,6 +164,7 @@ int kush_loop() {
         prompt(); // printing the prompt
         input_len = read_user_command(read_buff, &buffer_size); // reading command
         read_buff[input_len-1] = '\0';  // removing the last nl character
+        void* tokens = tokenize(read_buff);  // tokenizing command
         // parsing command
         // executing command
 
