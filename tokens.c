@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 char* token_type_names[] = {"error", "unknown token", "unfinished sequence", "empty", "command part", "semicolon", "pipe",
-"input redirect", "input redirect append", "output redirect", "outpur redirect append", "end"};
+"input redirect", "input redirect append", "output redirect", "output redirect append", "end"};
 
 extern void error_message(const char* text);
 
@@ -27,10 +27,12 @@ struct token next_token(const tchar_t *command) {
      */
 
     struct token token = {token_error, command, 1};
+    if (command==NULL) return token;
     tchar_t *src = command;
     bool token_found = false;
 
-    while (src) {  // looking for token start
+
+    while (*src) {  // looking for token start
         tchar_t sym = *src++;
 
         // checking whether symbol is a white character or not
@@ -49,7 +51,7 @@ struct token next_token(const tchar_t *command) {
         if (sym == '"' || sym == '\'') {  // interpreting quotes content as command part
             token.type = token_commandpart;
             while (*(src++)!=sym && *src) token.length++;
-            if (!*src) { // if no closing quote found
+            if (!*src && *(src-1)!=sym) { // if no closing quote found
                 token.type = token_unfinished;
                 token.length = src - token.src;
             }
@@ -69,12 +71,18 @@ struct token next_token(const tchar_t *command) {
                     token.type = token_semicolon;
                     break;
                 case '<':
-                    if (*(src+1) == '<' && *(src+2)!='<')token.type = token_inredirap;
+                    if (*(src) == '<' && *(src+1)!='<') {
+                        token.type = token_inredirap;
+                        token.length = 2;
+                    }
                     else token.type = token_inredir;
                     break;
                 case '>':
-                    if (*(src+1) == '>' && *(src+2)!='>')token.type = token_inredirap;
-                    else token.type = token_inredir;
+                    if (*(src) == '>' && *(src+1)!='>') {
+                        token.type = token_outredirap;
+                        token.length = 2;
+                    }
+                    else token.type = token_outredir;
                     break;
                 default:
                     token.type = token_unkown;
