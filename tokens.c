@@ -9,6 +9,9 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+char* token_type_names[] = {"error", "unknown token", "empty", "command part", "semicolon", "pipe",
+"input redirect", "input redirect append", "output redirect", "outpur redirect append", "end"};
+
 extern void error_message(const char* text);
 
 const char *white_characters = " \t\r\n\v\f";
@@ -25,6 +28,7 @@ struct token next_token(const tchar_t *command) {
 
     struct token token = {token_error, command, 1};
     tchar_t *src = command;
+    bool token_found = false;
 
     while (src) {  // looking for token start
         tchar_t sym = *src++;
@@ -33,7 +37,8 @@ struct token next_token(const tchar_t *command) {
         bool sh_skip = false;
         for (char *wc=white_characters; *wc; wc++) {
             if (*wc == sym) {
-                sh_skip = true;
+                token.type = token_empty;
+                sh_skip = token_found = true;
                 break;
             }
         }
@@ -53,12 +58,34 @@ struct token next_token(const tchar_t *command) {
             while (isalnum(*(src++))) token.length++;
         }
         else {
-            token.type = token_unkown;
-            return token;
+            switch (sym) {
+                case '|':
+                    token.type = token_pipe;
+                    break;
+                case ';':
+                    token.type = token_semicolon;
+                    break;
+                case '<':
+                    if (*(src+1) == '<' && *(src+2)!='<')token.type = token_inredirap;
+                    else token.type = token_inredir;
+                    break;
+                case '>':
+                    if (*(src+1) == '>' && *(src+2)!='>')token.type = token_inredirap;
+                    else token.type = token_inredir;
+                    break;
+                default:
+                    token.type = token_unkown;
+            }
         }
+        token_found = true;
         break; // exiting the loop
 
 
+    }
+    if (!token_found) token.type = token_end;
+    else if (token.type == token_empty) {
+        token.src = command;
+        token.length = src - command;
     }
 
     return token;

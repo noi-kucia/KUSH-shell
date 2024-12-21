@@ -15,8 +15,13 @@ enum token_types{
     token_semicolon,
     token_pipe,
     token_inredir,
-    token_outredir
+    token_inredirap,
+    token_outredir,
+    token_outredirap,
+    token_end
 };
+
+extern char* token_type_names[];
 
 struct token{
     enum token_types type;
