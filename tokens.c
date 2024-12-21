@@ -48,10 +48,12 @@ struct token next_token(const tchar_t *command) {
         token.src = src-1;
         if (sym == '"' || sym == '\'') {  // interpreting quotes content as command part
             token.type = token_commandpart;
-            token.length = 0;
-            token.src++; // because the first symbol is a quote
             while (*(src++)!=sym && *src) token.length++;
-            if (!*src) token.type = token_unfinished; // if no closing quote found
+            if (!*src) { // if no closing quote found
+                token.type = token_unfinished;
+                token.length = src - token.src;
+            }
+            else token.length++; // adding closing quote to length
         }
         else if (isalpha(sym)) {  //  interpreting all alphanumeric words (starting with a letter) as command parts
             token.type = token_commandpart;
