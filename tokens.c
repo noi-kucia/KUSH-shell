@@ -50,7 +50,7 @@ struct token next_token(const tchar_t *command) {
             token.type = token_commandpart;
             token.length = 0;
             token.src++; // because the first symbol is a quote
-            while (*(src++)!=sym || *src!='\0') token.length++;
+            while (*(src++)!=sym && *src) token.length++;
             if (!*src) token.type = token_unfinished; // if no closing quote found
         }
         else if (isalpha(sym)) {  //  interpreting all alphanumeric words (starting with a letter) as command parts
