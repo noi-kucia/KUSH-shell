@@ -164,13 +164,19 @@ int kush_loop() {
         prompt(); // printing the prompt
         input_len = read_user_command(read_buff, &buffer_size); // reading command
         read_buff[input_len-1] = '\0';  // removing the last nl character
-        void* tokens = tokenize(read_buff);  // tokenizing command
+        struct token token = next_token(read_buff);  // tokenizing command
         // parsing command
         // executing command
 
         //debug
         printf("got command: ");
-        cprint(read_buff, Colors.CYAN);
+        cprintnl(read_buff, Colors.CYAN);
+        char token_cont[120];
+        strncpy(token_cont, token.src, token.length);
+        token_cont[token.length] = '\0';
+        printf("got a token of type: %d of length %d\n", token.type, token.length);
+        printf("token: ");
+        cprintnl(token_cont, Colors.YELLOW);
     }
 
     return 0;
