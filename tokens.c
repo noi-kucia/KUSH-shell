@@ -57,7 +57,9 @@ struct token next_token(const tchar_t *command) {
             }
             else token.length++; // adding closing quote to length
         }
-        else if (isalpha(sym)) {  //  interpreting all alphanumeric words (starting with a letter) as command parts
+        else if (isalpha(sym)) {  //  all command parts without quotes (should start with letter)
+            // TODO: process backslash characters like \" \\ \[space] and so on
+            // TODO: contend could be non-alphanumeric like dots and underscores - a_b.txt
             token.type = token_commandpart;
             token.length = 1;
             while (isalnum(*(src++))) token.length++;
