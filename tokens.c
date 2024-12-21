@@ -9,7 +9,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-char* token_type_names[] = {"error", "unknown token", "empty", "command part", "semicolon", "pipe",
+char* token_type_names[] = {"error", "unknown token", "unfinished sequence", "empty", "command part", "semicolon", "pipe",
 "input redirect", "input redirect append", "output redirect", "outpur redirect append", "end"};
 
 extern void error_message(const char* text);
@@ -50,7 +50,8 @@ struct token next_token(const tchar_t *command) {
             token.type = token_commandpart;
             token.length = 0;
             token.src++; // because the first symbol is a quote
-            while (*(src++)!=sym) token.length++;
+            while (*(src++)!=sym || *src!='\0') token.length++;
+            if (!*src) token.type = token_unfinished; // if no closing quote found
         }
         else if (isalpha(sym)) {  //  interpreting all alphanumeric words (starting with a letter) as command parts
             token.type = token_commandpart;

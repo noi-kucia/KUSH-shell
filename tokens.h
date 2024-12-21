@@ -10,6 +10,7 @@ typedef char tchar_t;  // type of token character
 enum token_types{
     token_error,
     token_unkown,
+    token_unfinished,
     token_empty,
     token_commandpart,
     token_semicolon,
