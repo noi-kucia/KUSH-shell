@@ -5,12 +5,14 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "tokens.h"
+#include <string.h>
 
 #include <ctype.h>
 #include <stdlib.h>
 
-char* token_type_names[] = {"error", "unknown token", "unfinished sequence", "empty", "command part", "semicolon", "pipe",
+char* token_type_names[] = {"error", "unknown token", "unfinished sequence", "empty", "command term", "semicolon", "pipe",
 "input redirect", "input redirect append", "output redirect", "output redirect append", "end"};
+const char* command_allowed_symbols = "./~\\_()-";
 
 extern void error_message(const char* text);
 
@@ -48,8 +50,8 @@ struct token next_token(const tchar_t *command) {
 
         // extracting the token
         token.src = src-1;
-        if (sym == '"' || sym == '\'') {  // interpreting quotes content as command part
-            token.type = token_commandpart;
+        if (sym == '"' || sym == '\'') {  // interpreting quotes content as command term
+            token.type = token_commandterm;
             while (*(src++)!=sym && *src) token.length++;
             if (!*src && *(src-1)!=sym) { // if no closing quote found
                 token.type = token_unfinished;
@@ -57,12 +59,13 @@ struct token next_token(const tchar_t *command) {
             }
             else token.length++; // adding closing quote to length
         }
-        else if (isalpha(sym)) {  //  all command parts without quotes (should start with letter)
-            // TODO: process backslash characters like \" \\ \[space] and so on
-            // TODO: contend could be non-alphanumeric like dots and underscores - a_b.txt
-            token.type = token_commandpart;
+        else if (isalpha(sym) || strchr(command_allowed_symbols, sym)!=NULL) {  // command terms itself
+            token.type = token_commandterm;
             token.length = 1;
-            while (isalnum(*(src++))) token.length++;
+            while (*src && (isalnum(*src) || strchr(command_allowed_symbols, *src)!=NULL || *(src-1)=='\\')) {
+                token.length++;
+                src++;
+            }
         }
         else {
             switch (sym) {

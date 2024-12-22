@@ -12,7 +12,7 @@ enum token_types{
     token_unkown,
     token_unfinished,
     token_empty,
-    token_commandpart,
+    token_commandterm,
     token_semicolon,
     token_pipe,
     token_inredir,
