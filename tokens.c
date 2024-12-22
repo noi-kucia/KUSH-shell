@@ -121,11 +121,11 @@ struct token **get_tokens(const tchar_t *command) {
     if ((tokens=malloc(token_buffsize*sizeof(void*))) ==  nullptr) return nullptr;  // returns null when cannot allocate memory
 
     // extracting tokens into the array
-    enum token_types pt;
     uint16_t tokenc = 0;  // counter of how much tokens are already in array
+    struct token *token;
     do {
         // getting a token
-        struct token *token = malloc(sizeof(struct token));
+        token = malloc(sizeof(struct token));
         if (!token) return nullptr;
         *token = next_token(command);  // moving the token into a heap
 
@@ -139,11 +139,12 @@ struct token **get_tokens(const tchar_t *command) {
         }
 
         // checking whether the token is terminating
-        pt = token->type;
+        const enum token_types pt = token->type;
         command = token->src + token->length;
         tokens[tokenc] = (pt != token_end && pt != token_error && pt != token_unkown)? token : nullptr;
 
     } while (tokens[tokenc++]);
+    free(token);
 
     return tokens;
 }
