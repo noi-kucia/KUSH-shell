@@ -31,6 +31,7 @@ struct token{
 };
 
 struct token next_token(const tchar_t *command);
+struct token **get_tokens(const tchar_t *command);
 
 
 

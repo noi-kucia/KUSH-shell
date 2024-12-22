@@ -172,17 +172,22 @@ int kush_loop() {
         printf("got command: ");
         cprintnl(read_buff, Colors.CYAN);
         printf("tokens:\n");
-        enum token_types pt;
-        do {
-            struct token token = next_token(read_buff);
-            pt = token.type;
+        struct token ** tokens = get_tokens(read_buff);
+        if (!tokens) {
+            error_message("Error has occured inside get_tokens");
+            continue;
+        }
+        for (typeof(tokens)tc=tokens;*tc;tc++) {
             char token_cont[120];
+            struct token token = **tc;
             strncpy(token_cont, token.src, token.length);
             token_cont[token.length] = '\0';
             cprint(token_cont, Colors.YELLOW);
             printf(" - type: %s of length %d\n", token_type_names[token.type], token.length);
-            read_buff = token.src + token.length;
-        } while (pt != token_end && pt != token_error && pt != token_unkown);
+        }
+
+        for (typeof(tokens) tc=tokens;*tc;tc++) free(*tc);
+        free(tokens);
     }
 
     return 0;

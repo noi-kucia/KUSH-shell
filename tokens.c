@@ -30,7 +30,7 @@ struct token next_token(const tchar_t *command) {
 
     struct token token = {token_error, command, 1};
     if (command==NULL) return token;
-    tchar_t *src = command;
+    const tchar_t *src = command;
     bool token_found = false;
 
 
@@ -39,7 +39,7 @@ struct token next_token(const tchar_t *command) {
 
         // checking whether symbol is a white character or not
         bool sh_skip = false;
-        for (char *wc=white_characters; *wc; wc++) {
+        for (const char *wc=white_characters; *wc; wc++) {
             if (*wc == sym) {
                 token.type = token_empty;
                 sh_skip = token_found = true;
@@ -106,3 +106,44 @@ struct token next_token(const tchar_t *command) {
 
     return token;
 };
+
+struct token **get_tokens(const tchar_t *command) {
+    /* Reads all the tokens from command and returns a pointer to a null-terminated array of token pointers.
+     * In case of error will return NULL.*
+     * Will also ignore all unknown, error or end tokens (they terminate function loop)
+     *
+     * Note: remember to free the array and its elements!
+     */
+
+    // initializing a buffer for token pointers
+    size_t token_buffsize = 64;
+    struct token **tokens;
+    if ((tokens=malloc(token_buffsize*sizeof(void*))) ==  nullptr) return nullptr;  // returns null when cannot allocate memory
+
+    // extracting tokens into the array
+    enum token_types pt;
+    uint16_t tokenc = 0;  // counter of how much tokens are already in array
+    do {
+        // getting a token
+        struct token *token = malloc(sizeof(struct token));
+        if (!token) return nullptr;
+        *token = next_token(command);  // moving the token into a heap
+
+        // checking is there enough space in the array
+        if (tokenc >= token_buffsize) {
+            token_buffsize *= 2;
+            if (realloc(tokens, token_buffsize*sizeof(void*)) == nullptr) { // reallocation fault
+                free(tokens);
+                return nullptr;
+            }
+        }
+
+        // checking whether the token is terminating
+        pt = token->type;
+        command = token->src + token->length;
+        tokens[tokenc] = (pt != token_end && pt != token_error && pt != token_unkown)? token : nullptr;
+
+    } while (tokens[tokenc++]);
+
+    return tokens;
+}
