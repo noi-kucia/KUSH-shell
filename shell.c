@@ -174,12 +174,12 @@ int kush_loop() {
         printf("tokens:\n");
         struct token ** tokens = get_tokens(read_buff);
         if (!tokens) {
-            error_message("Error has occured inside get_tokens");
-            continue;
+            error_message("Error has occurred inside get_tokens");
+            break;
         }
         for (typeof(tokens)tc=tokens;*tc;tc++) {
             char token_cont[120];
-            struct token token = **tc;
+            const struct token token = **tc;
             strncpy(token_cont, token.src, token.length);
             token_cont[token.length] = '\0';
             cprint(token_cont, Colors.YELLOW);
