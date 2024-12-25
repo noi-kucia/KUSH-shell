@@ -5,6 +5,8 @@ made by Artur Pozniak aka KUCIA
 BAJERY:
 1) when path length in prompt exceeds maximal value, it's getting truncated;
    Also the home path is replaced by ~ automatically
+2) strings in quotes allows to use raw strings (both ' and ")
+3) escape character (backslash) support
 */
 
 // standard libs
