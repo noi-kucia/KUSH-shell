@@ -170,15 +170,13 @@ int kush_loop() {
         prompt(); // printing the prompt
         input_len = read_user_command(read_buff, &buffer_size); // reading command
         read_buff[input_len-1] = '\0';  // removing the last nl character
-        // tokenizing command
-        // parsing command
-        // executing command
+        struct token ** tokens = get_tokens(read_buff); // tokenizing command
+        execute_sequence(tokens); // executing command
 
         //debug
         printf("got command: ");
         cprintnl(read_buff, Colors.CYAN);
         printf("tokens:\n");
-        struct token ** tokens = get_tokens(read_buff);
         if (!tokens) {
             error_message("Error has occurred inside get_tokens");
             break;
