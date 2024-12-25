@@ -83,6 +83,11 @@ void print_greetings(void){
     cprintnl(R"edge(    |__|      \______/      |__|\__\  \______/  |_______/    |__|  |__|  (__))edge", Colors.PURPLE);
     cprintnl(R"edge(                                                                             )edge", Colors.PURPLE);
     cprintnl(R"edge(-----------------------------------------------------------------------------)edge", Colors.PURPLE);
+    cprintnl(R"edge(                                                                             )edge", Colors.PURPLE);
+    cprintnl(R"edge(       >/< type help to get information about functionality >/<              )edge", Colors.GREEN);
+    cprint(R"edge(                  >/< made by )edge", Colors.GREEN);
+    cprint("Artur Pozniak", Colors.YELLOW);
+    cprintnl(" >/<                                                            ", Colors.GREEN);
     printf(" \n");
 }
 
