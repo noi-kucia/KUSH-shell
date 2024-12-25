@@ -2,13 +2,7 @@
 // Created by kucia on 12/1/24.
 //
 
-#include <stdint.h>
-#include <stdio.h>
 #include "tokens.h"
-#include <string.h>
-
-#include <ctype.h>
-#include <stdlib.h>
 
 char* token_type_names[] = {"error", "unknown token", "unfinished sequence", "empty", "command term", "semicolon", "pipe",
 "input redirect", "input redirect append", "output redirect", "output redirect append", "end"};
@@ -105,7 +99,7 @@ struct token next_token(const tchar_t *command) {
     }
 
     return token;
-};
+}
 
 struct token **get_tokens(const tchar_t *command) {
     /* Reads all the tokens from command and returns a pointer to a null-terminated array of token pointers.

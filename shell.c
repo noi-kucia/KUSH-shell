@@ -15,18 +15,17 @@ BAJERY:
 #include <string.h>
 #include <stdarg.h>
 #include <wchar.h>
-#include <string.h>
 #include <locale.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
-#include <math.h>
 #include <regex.h>
 #include <stdbool.h>
 #include <errno.h>
 
 // local includes
 #include "tokens.h"
+#include "executor.h"
 
 #define READ_BUFFER_SIZE 1024
 
@@ -193,8 +192,7 @@ int kush_loop() {
             printf(" - type: %s of length %d\n", token_type_names[token.type], token.length);
         }
 
-        for (typeof(tokens) tc=tokens;*tc;tc++) free(*tc);
-        free(tokens);
+        free_sequence(tokens);
     }
 
     return 0;

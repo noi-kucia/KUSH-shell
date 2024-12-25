@@ -5,6 +5,12 @@
 #ifndef TOKENS_H
 #define TOKENS_H
 
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdlib.h>
+
 // defining types
 typedef char tchar_t;  // type of token character
 enum token_types{
@@ -30,8 +36,8 @@ struct token{
     uint16_t length;
 };
 
-struct token next_token(const tchar_t *command);
-struct token **get_tokens(const tchar_t *command);
+struct token next_token(const tchar_t *);
+struct token **get_tokens(const tchar_t *);
 
 
 
