@@ -6,10 +6,6 @@
 #define TOKENS_H
 
 #include <stdint.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <stdlib.h>
 
 // defining types
 typedef char tchar_t;  // type of token character

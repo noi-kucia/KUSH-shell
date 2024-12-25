@@ -3,6 +3,10 @@
 //
 
 #include "tokens.h"
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdlib.h>
 
 char* token_type_names[] = {"error", "unknown token", "unfinished sequence", "empty", "command term", "semicolon", "pipe",
 "input redirect", "input redirect append", "output redirect", "output redirect append", "end"};
