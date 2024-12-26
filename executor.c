@@ -13,6 +13,16 @@ void execute_sequence(struct token** sequence) {
      * and executes is as command.
      * If a sequence is wrong, the corresponding message will be printed on diagnostic output.
      */
+    //debug
+    printf("tokens:\n");
+    for (typeof(sequence)tc=sequence;*tc;tc++) {
+        char token_cont[120];
+        const struct token token = **tc;
+        strncpy(token_cont, token.src, token.length);
+        token_cont[token.length] = '\0';
+        cprint(token_cont, Colors.YELLOW);
+        printf(" - type: %s of length %d\n", token_type_names[token.type], token.length);
+    }
 }
 
 void free_sequence(struct token** sequence) {

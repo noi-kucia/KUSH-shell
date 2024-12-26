@@ -24,40 +24,13 @@ BAJERY:
 #include <errno.h>
 
 // local includes
+#include "print_utils.h"
 #include "tokens.h"
 #include "executor.h"
 
 #define READ_BUFFER_SIZE 1024
 
-// helper structures and objects
-typedef struct{
-    const char* WHITE;
-    const char* BLACK;
-    const char* RED;
-    const char* GREEN;
-    const char* PURPLE;
-    const char* YELLOW;
-    const char* CYAN;
-    const char* BLUE;
-    const char* CLEAR;
-} colors_t;
-
-colors_t Colors = {"\x1b[0;37m",
-    "\x1b[0;30m", "\x1b[0;31m", "\x1b[0;32m", "\x1b[0;35m", "\x1b[0;33m",
-    "\x1b[0;36m", "\x1b[34m", "\x1b[0;37m"};
-const char* HOME_PATH = "";  // is set in prepare function; does not contain last slash
-
-// helper functions and methods
-void cprint(const char* text, const char* color){
-    // function used to print text with certain color
-    printf("%s%s%s", color, text, Colors.CLEAR);
-}
-
-void cprintnl(const char* text, const char* color){
-    // same as cprint, but prints an end of the line
-    cprint(text, color);
-    printf("\n");
-}
+const char* HOME_PATH = "";  // is set in prepare function
 
 void error_message(const char* text) {
     printf("[");
@@ -135,10 +108,6 @@ void prompt() {
         strncpy(path+3, start_index, path_max_size-4);
     }
     else strncpy(path, buff, path_max_size);
-
-
-
-
 
     // printing a result
     printf("%s@%s-> %s%s%s$", username, hostname, Colors.BLUE, path, Colors.CLEAR);
