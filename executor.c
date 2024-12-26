@@ -14,6 +14,7 @@ void execute_sequence(struct token** sequence) {
      * If a sequence is wrong, the corresponding message will be printed on diagnostic output.
      */
     //debug
+    perror("example error");
     printf("tokens:\n");
     for (typeof(sequence)tc=sequence;*tc;tc++) {
         char token_cont[120];

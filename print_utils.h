@@ -23,6 +23,7 @@ extern colors_t Colors;
 
 void cprintnl(const char* text, const char* color);
 void cprint(const char* text, const char* color);
+void error_message(const char* text);
 
 
 #endif //PRINT_UTILS_H

@@ -18,3 +18,9 @@ void cprintnl(const char* text, const char* color){
     cprint(text, color);
     printf("\n");
 }
+
+void error_message(const char* text) {
+    printf("[");
+    cprint("ERROR", Colors.RED);
+    printf("]: %s", text);
+}

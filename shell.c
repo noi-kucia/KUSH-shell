@@ -32,12 +32,6 @@ BAJERY:
 
 const char* HOME_PATH = "";  // is set in prepare function
 
-void error_message(const char* text) {
-    printf("[");
-    cprint("ERROR", Colors.RED);
-    printf("]: %s", text);
-}
-
 void print_greetings(void){
     printf(" \n");
     cprintnl(R"edge(____    __    ____  _______  __        ______   ______   .___  ___.  _______ )edge", Colors.PURPLE);
