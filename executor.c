@@ -8,9 +8,11 @@
 
 // ; priority is lower than | or >/<
 
-int execute_sequence(struct token** sequence) {
-    /* TODO: describe */
-    return 0;
+void execute_sequence(struct token** sequence) {
+    /* Takes a pointer to a sequence of token pointers as argument
+     * and executes is as command.
+     * If a sequence is wrong, the corresponding message will be printed on diagnostic output.
+     */
 }
 
 void free_sequence(struct token** sequence) {

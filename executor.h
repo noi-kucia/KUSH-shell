@@ -7,7 +7,7 @@
 
 #include "tokens.h"
 
-int execute_sequence(struct token**);
+void execute_sequence(struct token**);
 void free_sequence(struct token**);
 
 #endif //EXECUTOR_H
