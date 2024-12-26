@@ -172,25 +172,7 @@ int kush_loop() {
         read_buff[input_len-1] = '\0';  // removing the last nl character
         struct token ** tokens = get_tokens(read_buff); // tokenizing command
         execute_sequence(tokens); // executing command
-
-        //debug
-        printf("got command: ");
-        cprintnl(read_buff, Colors.CYAN);
-        printf("tokens:\n");
-        if (!tokens) {
-            error_message("Error has occurred inside get_tokens");
-            break;
-        }
-        for (typeof(tokens)tc=tokens;*tc;tc++) {
-            char token_cont[120];
-            const struct token token = **tc;
-            strncpy(token_cont, token.src, token.length);
-            token_cont[token.length] = '\0';
-            cprint(token_cont, Colors.YELLOW);
-            printf(" - type: %s of length %d\n", token_type_names[token.type], token.length);
-        }
-
-        free_sequence(tokens);
+        free_sequence(tokens);  // freeing memory
     }
 
     return 0;
