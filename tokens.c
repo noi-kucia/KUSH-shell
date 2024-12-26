@@ -41,15 +41,10 @@ struct token next_token_safe(const tchar_t *command) {
         tchar_t sym = *src++;
 
         // checking whether symbol is a white character or not
-        bool sh_skip = false;
-        for (const char *wc=white_characters; *wc; wc++) {
-            if (*wc == sym) {
-                token.type = token_empty;
-                sh_skip = token_found = true;
-                break;
-            }
+        if (strchr(white_characters, sym)) {
+            token.type = token_empty;
+            continue;
         }
-        if (sh_skip) continue;
 
         // extracting the token depending on the first character
         token.src = src-1;
