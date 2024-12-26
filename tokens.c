@@ -55,6 +55,7 @@ struct token next_token_safe(const tchar_t *command) {
             if (!*src && *(src-1)!=sym) { // if no closing quote found
                 token.type = token_unfinished;
                 token.length = src - token.src;
+                error_emph_prefix("Unclosed quote has been found - ", token.src, 0, token.length);
             }
             else token.length++; // adding closing quote to length
         }
