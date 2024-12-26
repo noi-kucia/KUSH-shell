@@ -152,11 +152,7 @@ size_t  read_user_command(char *buff, size_t *buffer_size) {
     return getline(&buff, buffer_size, stdin);;
 }
 
-
-void parse();
-
 int kush_loop() {
-
     // allocating a buffer to read the user input
     size_t buffer_size = READ_BUFFER_SIZE;
     size_t input_len = 0;
