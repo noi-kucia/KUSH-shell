@@ -41,3 +41,13 @@ void error_emph_message(const char *mesg, __uint16_t start, __uint16_t end) {
     }
     printf("\n");
 }
+
+void error_emph_prefix(const char *prefix, const char *mesg, __uint16_t start, __uint16_t end) {
+    /* Works like an error_emph_message, but the message is split into prefix and an actual message.
+     * Start and end indexes will be calculated relative to message length regardless of prefix length.
+     */
+    unsigned int preflen = strlen(prefix);
+    char text[preflen+strlen(mesg)+1];
+    sprintf(text, "%s%s\0", prefix, mesg);
+    error_emph_message(text, preflen+start, preflen+end);
+}
