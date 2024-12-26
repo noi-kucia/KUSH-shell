@@ -185,6 +185,7 @@ struct token **get_tokens_safe(const tchar_t *command) {
         previous_type = token->type;
         command = token->src + token->length;
         tokens[tokenc] = (previous_type != token_end &&
+                          previous_type != token_empty &&
                           previous_type != token_error &&
                           previous_type != token_unknown &&
                           previous_type != token_unfinished)? token : nullptr;
@@ -192,8 +193,9 @@ struct token **get_tokens_safe(const tchar_t *command) {
     } while (tokens[tokenc++]);
 
     // when a sequence isn't correctly finished
-    if (previous_type!=token_end) {
-        error_message("^ unable to parse command, see errors above ^"); // printing a message
+    if (previous_type!=token_end && previous_type!=token_empty) {
+        error_message("^ unable to parse the "
+                      "command, see errors above ^"); // printing a message
         // clearing the memory
         free(token);
         free_sequence(tokens);
