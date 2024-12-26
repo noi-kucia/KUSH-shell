@@ -10,20 +10,22 @@
 
 #include "executor.h"
 
-char* token_type_names[] = {"error", "unknown token", "unfinished sequence", "empty", "command term", "semicolon", "pipe",
+const char *token_type_names[] = {"error", "unknown token", "unfinished sequence", "empty", "command term", "semicolon", "pipe",
 "input redirect", "input redirect append", "output redirect", "output redirect append", "end"};
-const char* command_allowed_symbols = "./~\\_()-";
+const char *command_allowed_symbols = "./~_()-";
+const char *escape_chars = "\\ nrvtbf'\"";
 
 extern void error_message(const char* text);
 
 const char *white_characters = " \t\r\n\v\f";
 
-struct token next_token(const tchar_t *command) {
+struct token next_token_safe(const tchar_t *command) {
     /* Part of the lexer functionality serves for receiving one token.
      * The only argument is a pointer to place to start scanning from.
      * Returns a token struct object, and if for some reason it's impossible,
      * the type will be set to error (empty string or allocation error).
-     * If some unknown sequence or character is found, returns a token with token_unknown type.
+     * If some unknown sequence or character is found, returns a token with token_unknown type and
+     * prints an appropriate error message.
      *
      * Note that token.src could not match the argument pointer, cuz white characters can be omitted.
      * Also note that token.src refers to command, so it shouldn't be overridden before token is freed.
@@ -49,9 +51,11 @@ struct token next_token(const tchar_t *command) {
         }
         if (sh_skip) continue;
 
-        // extracting the token
+        // extracting the token depending on the first character
         token.src = src-1;
-        if (sym == '"' || sym == '\'') {  // interpreting quotes content as command term
+
+        // interpreting quotes content as command term
+        if (sym == '"' || sym == '\'') {
             token.type = token_commandterm;
             while (*(src++)!=sym && *src) token.length++;
             if (!*src && *(src-1)!=sym) { // if no closing quote found
@@ -60,14 +64,56 @@ struct token next_token(const tchar_t *command) {
             }
             else token.length++; // adding closing quote to length
         }
-        else if (isalpha(sym) || strchr(command_allowed_symbols, sym)!=NULL) {  // command terms itself
+
+        // command terms itself
+        else if (isalpha(sym) || strchr(command_allowed_symbols, sym)!=NULL) {
             token.type = token_commandterm;
             token.length = 1;
-            while (*src && (isalnum(*src) || strchr(command_allowed_symbols, *src)!=NULL || *(src-1)=='\\')) {
-                token.length++;
-                src++;
+
+            while (true) {
+                // normal characters
+                if (!*src) break;
+                if (isalnum(*src) ||  strchr(command_allowed_symbols, *src)!=NULL) {
+                    token.length++;
+                    src++;
+                }
+                // escape characters
+                else if (*src=='\\') {
+                    if (*(src+1)) {
+                        if (strchr(escape_chars, *(src+1))!=NULL) {
+                            // TOOD: return token_error otherwise
+                            token.length += 2;
+                            src += 2;
+                        }
+                        else {
+                            // when a backslash is followed by unknown character
+                            const char mesg[0xff];
+                            const char *pref = "Unknown escape character - ";
+                            sprintf(mesg, "%s%s", pref, token.src);
+                            __uint16_t bsstart = strlen(pref)+token.length;
+                            error_emph_message(mesg, bsstart, bsstart+2);
+                            token.type = token_error;
+                            return token;
+                        }
+                    }
+                    else {
+                        // when a backslash is the last character
+                        const char mesg[0xff];
+                        const char *pref = "Unterminated escape sequence - ";
+                        sprintf(mesg, "%s%s", pref, token.src);
+                        __uint16_t bsstart = strlen(pref)+token.length;
+                        error_emph_message(mesg, bsstart, bsstart+1);
+                        token.type = token_error;
+                        return token;
+
+                    }
+                }
+                else break;
+
             }
         }
+
+        // operators or unknown
         else {
             switch (sym) {
                 case '|':
@@ -112,6 +158,7 @@ struct token **get_tokens_safe(const tchar_t *command) {
     /* Reads all the tokens from command and returns a pointer to a null-terminated array of token pointers.
      * In case of error will return NULL.*
      * When unknown or error token is found, NULL is returned, and the corresponding message is printed.
+     * All token exceptions should be caught in next_token_safe, not here.
      *
      * Note: remember to free the array and its elements!
      */
@@ -129,7 +176,7 @@ struct token **get_tokens_safe(const tchar_t *command) {
         // getting a token
         token = malloc(sizeof(struct token));
         if (!token) return nullptr;
-        *token = next_token(command);  // moving the token into a heap
+        *token = next_token_safe(command);  // moving the token into a heap
 
         // checking is there enough space in the array
         if (tokenc >= token_buffsize) {
@@ -151,22 +198,7 @@ struct token **get_tokens_safe(const tchar_t *command) {
 
     // when a sequence isn't correctly finished
     if (previous_type!=token_end) {
-
-        // printing a message
-        const char msg[0xff];
-        switch (previous_type) {
-            case token_error:
-                sprintf(msg,  "unable to parse token - %s", token->src);
-                break;
-            case token_unknown:
-                sprintf(msg, "unknown token has been found - %s", token->src);
-                break;
-            case token_unfinished:
-                sprintf(msg, "unfinished sequence has been found - %s", token->src);
-            default:;
-        }
-        error_message(msg);
-
+        error_message("^ unable to parse command, see errors above ^"); // printing a message
         // clearing the memory
         free(token);
         free_sequence(tokens);

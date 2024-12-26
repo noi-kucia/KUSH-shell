@@ -24,7 +24,8 @@ enum token_types{
     token_end
 };
 
-extern char* token_type_names[];
+extern const char* token_type_names[];
+extern const char* escape_chars;
 
 struct token{
     enum token_types type;
@@ -32,7 +33,7 @@ struct token{
     uint16_t length;
 };
 
-struct token next_token(const tchar_t *);
+struct token next_token_safe(const tchar_t *);
 struct token **get_tokens_safe(const tchar_t *);
 
 
