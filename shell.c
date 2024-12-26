@@ -119,7 +119,7 @@ int kush_loop() {
     // allocating a buffer to read the user input
     size_t buffer_size = READ_BUFFER_SIZE;
     size_t input_len = 0;
-    char* read_buff = malloc(buffer_size);
+    char *read_buff = malloc(buffer_size);
     if (read_buff == nullptr) {
         error_message("Unable to allocate memory for read buffer");
         return -1;
@@ -129,9 +129,11 @@ int kush_loop() {
         prompt(); // printing the prompt
         input_len = read_user_command(read_buff, &buffer_size); // reading command
         read_buff[input_len-1] = '\0';  // removing the last nl character
-        struct token ** tokens = get_tokens(read_buff); // tokenizing command
-        execute_sequence(tokens); // executing command
-        free_sequence(tokens);  // freeing memory
+        struct token ** tokens = get_tokens_safe(read_buff); // tokenizing command
+        if (tokens){
+            execute_sequence(tokens); // executing command
+            free_sequence(tokens);  // freeing memory
+        }
     }
 
     return 0;

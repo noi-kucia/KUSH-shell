@@ -13,16 +13,36 @@ void execute_sequence(struct token** sequence) {
      * and executes is as command.
      * If a sequence is wrong, the corresponding message will be printed on diagnostic output.
      */
+
     //debug
-    perror("example error");
-    printf("tokens:\n");
-    for (typeof(sequence)tc=sequence;*tc;tc++) {
-        char token_cont[120];
-        const struct token token = **tc;
-        strncpy(token_cont, token.src, token.length);
-        token_cont[token.length] = '\0';
-        cprint(token_cont, Colors.YELLOW);
-        printf(" - type: %s of length %d\n", token_type_names[token.type], token.length);
+    // printf("tokens:\n");
+    // for (typeof(sequence)tc=sequence;*tc;tc++) {
+    //     char token_cont[120];
+    //     const struct token token = **tc;
+    //     strncpy(token_cont, token.src, token.length);
+    //     token_cont[token.length] = '\0';
+    //     cprint(token_cont, Colors.YELLOW);
+    //     printf(" - type: %s of length %d\n", token_type_names[token.type], token.length);
+    // }
+
+    while (*sequence) {  // going through individual commands
+
+        // extracting the command (always first)
+        const struct token command = **(sequence);
+        if (command.type!=token_commandterm) {
+            char mesg[256];
+            snprintf(mesg, 256, "Invalid command %s", command.src);
+            error_message(mesg);
+            break;
+        }
+        else {
+            char command_name[command.length+1];
+            command_name[command.length] = '\0';
+            strncpy(command_name, command.src, command.length);
+            printf("executing command: ");
+            cprintnl(command_name, Colors.CYAN);
+            break;
+        }
     }
 }
 
