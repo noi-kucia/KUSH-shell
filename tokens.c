@@ -12,7 +12,7 @@
 
 const char *token_type_names[] = {"error", "unknown token", "unfinished sequence", "empty", "command term", "semicolon", "pipe",
 "input redirect", "input redirect append", "output redirect", "output redirect append", "end"};
-const char *command_allowed_symbols = "./~_()-";
+const char *command_allowed_symbols = "./~_()-#%^[]+";
 const char *escape_chars = "\\ nrvtbf'\"";
 
 extern void error_message(const char* text);
@@ -129,6 +129,7 @@ struct token next_token_safe(const tchar_t *command) {
                     break;
                 default:
                     token.type = token_unknown;
+                    error_emph_prefix("Unable to detect token type - ", token.src, 0, 3);
             }
         }
         token_found = true;
