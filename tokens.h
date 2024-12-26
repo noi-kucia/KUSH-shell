@@ -11,7 +11,7 @@
 typedef char tchar_t;  // type of token character
 enum token_types{
     token_error,
-    token_unkown,
+    token_unknown,
     token_unfinished,
     token_empty,
     token_commandterm,
@@ -33,7 +33,7 @@ struct token{
 };
 
 struct token next_token(const tchar_t *);
-struct token **get_tokens(const tchar_t *);
+struct token **get_tokens_safe(const tchar_t *);
 
 
 

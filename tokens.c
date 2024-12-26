@@ -8,6 +8,8 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+#include "executor.h"
+
 char* token_type_names[] = {"error", "unknown token", "unfinished sequence", "empty", "command term", "semicolon", "pipe",
 "input redirect", "input redirect append", "output redirect", "output redirect append", "end"};
 const char* command_allowed_symbols = "./~\\_()-";
@@ -24,6 +26,7 @@ struct token next_token(const tchar_t *command) {
      * If some unknown sequence or character is found, returns a token with token_unknown type.
      *
      * Note that token.src could not match the argument pointer, cuz white characters can be omitted.
+     * Also note that token.src refers to command, so it shouldn't be overridden before token is freed.
      */
 
     struct token token = {token_error, command, 1};
@@ -88,7 +91,7 @@ struct token next_token(const tchar_t *command) {
                     else token.type = token_outredir;
                     break;
                 default:
-                    token.type = token_unkown;
+                    token.type = token_unknown;
             }
         }
         token_found = true;
@@ -105,10 +108,10 @@ struct token next_token(const tchar_t *command) {
     return token;
 }
 
-struct token **get_tokens(const tchar_t *command) {
+struct token **get_tokens_safe(const tchar_t *command) {
     /* Reads all the tokens from command and returns a pointer to a null-terminated array of token pointers.
      * In case of error will return NULL.*
-     * Will also ignore all unknown, error or end tokens (they terminate function loop)
+     * When unknown or error token is found, NULL is returned, and the corresponding message is printed.
      *
      * Note: remember to free the array and its elements!
      */
@@ -121,6 +124,7 @@ struct token **get_tokens(const tchar_t *command) {
     // extracting tokens into the array
     uint16_t tokenc = 0;  // counter of how much tokens are already in array
     struct token *token;
+    enum token_types previous_type;
     do {
         // getting a token
         token = malloc(sizeof(struct token));
@@ -136,13 +140,40 @@ struct token **get_tokens(const tchar_t *command) {
             }
         }
 
-        // checking whether the token is terminating
-        const enum token_types pt = token->type;
+        previous_type = token->type;
         command = token->src + token->length;
-        tokens[tokenc] = (pt != token_end && pt != token_error && pt != token_unkown)? token : nullptr;
+        tokens[tokenc] = (previous_type != token_end &&
+                          previous_type != token_error &&
+                          previous_type != token_unknown &&
+                          previous_type != token_unfinished)? token : nullptr;
 
     } while (tokens[tokenc++]);
-    free(token);
 
+    // when a sequence isn't correctly finished
+    if (previous_type!=token_end) {
+
+        // printing a message
+        const char msg[0xff];
+        switch (previous_type) {
+            case token_error:
+                sprintf(msg,  "unable to parse token - %s", token->src);
+                break;
+            case token_unknown:
+                sprintf(msg, "unknown token has been found - %s", token->src);
+                break;
+            case token_unfinished:
+                sprintf(msg, "unfinished sequence has been found - %s", token->src);
+            default:;
+        }
+        error_message(msg);
+
+        // clearing the memory
+        free(token);
+        free_sequence(tokens);
+
+        return nullptr;
+    }
+
+    free(token);
     return tokens;
 }
