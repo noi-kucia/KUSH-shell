@@ -7,6 +7,8 @@ BAJERY:
    Also the home path is replaced by ~ automatically
 2) strings in quotes allows to use raw strings (both ' and ")
 3) escape character (backslash) support
+4) strongly protected from allocation errors
+5) error emphasizing
 */
 
 // standard libs
