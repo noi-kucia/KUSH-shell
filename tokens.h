@@ -24,8 +24,6 @@ enum token_types{
     token_end
 };
 
-extern const char* token_type_names[];
-extern const char* escape_chars;
 
 struct token{
     enum token_types type;
