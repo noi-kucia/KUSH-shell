@@ -128,10 +128,10 @@ void prompt() {
         strlcpy(buff+1, buff+strlen(HOME_PATH), buff_size-1);
     }
 
-    // truncating path if needed or just copying buffer to path
+    // truncating path if needed or just copying it
     if (strlen(buff)>path_max_size) {
         strncpy(path, "...", path_max_size);
-        char* start_index = strrchr(buff, '/');
+        const char *start_index = strrchr(buff, '/');
         strncpy(path+3, start_index, path_max_size-4);
     }
     else strncpy(path, buff, path_max_size);
