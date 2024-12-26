@@ -138,10 +138,6 @@ struct token next_token_safe(const tchar_t *command) {
 
     }
     if (!token_found) token.type = token_end;
-    else if (token.type == token_empty) {
-        token.src = command;
-        token.length = src - command;
-    }
 
     return token;
 }
