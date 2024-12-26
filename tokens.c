@@ -38,6 +38,7 @@ struct token next_token_safe(const tchar_t *command) {
 
 
     while (*src) {  // looking for token start
+        token.src = src;
         tchar_t sym = *src++;
 
         // checking whether symbol is a white character or not
@@ -47,8 +48,6 @@ struct token next_token_safe(const tchar_t *command) {
         }
 
         // extracting the token depending on the first character
-        token.src = src-1;
-
         // interpreting quotes content as command term
         if (sym == '"' || sym == '\'') {
             token.type = token_commandterm;
@@ -76,28 +75,19 @@ struct token next_token_safe(const tchar_t *command) {
                 else if (*src=='\\') {
                     if (*(src+1)) {
                         if (strchr(escape_chars, *(src+1))!=NULL) {
-                            // TOOD: return token_error otherwise
                             token.length += 2;
                             src += 2;
                         }
                         else {
                             // when a backslash is followed by unknown character
-                            const char mesg[0xff];
-                            const char *pref = "Unknown escape character - ";
-                            sprintf(mesg, "%s%s", pref, token.src);
-                            __uint16_t bsstart = strlen(pref)+token.length;
-                            error_emph_message(mesg, bsstart, bsstart+2);
+                            error_emph_prefix("Unknown escape character - ", token.src, token.length, token.length+2);
                             token.type = token_error;
                             return token;
                         }
                     }
                     else {
                         // when a backslash is the last character
-                        const char mesg[0xff];
-                        const char *pref = "Unterminated escape sequence - ";
-                        sprintf(mesg, "%s%s", pref, token.src);
-                        __uint16_t bsstart = strlen(pref)+token.length;
-                        error_emph_message(mesg, bsstart, bsstart+1);
+                        error_emph_prefix("Unterminated escape sequence - ", token.src, token.length, token.length+1);
                         token.type = token_error;
                         return token;
 
