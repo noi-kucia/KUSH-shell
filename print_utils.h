@@ -6,6 +6,7 @@
 #define PRINT_UTILS_H
 
 #include <stdio.h>
+#include <string.h>
 
 typedef struct{
     const char* WHITE;
@@ -21,9 +22,10 @@ typedef struct{
 
 extern colors_t Colors;
 
-void cprintnl(const char* text, const char* color);
-void cprint(const char* text, const char* color);
-void error_message(const char* text);
+void cprintnl(const char *text, const char *color);
+void cprint(const char *text, const char *color);
+void error_message(const char *mesg);
+void error_emph_message(const char *mesg, __uint16_t start, __uint16_t end);
 
 
 #endif //PRINT_UTILS_H

@@ -19,8 +19,25 @@ void cprintnl(const char* text, const char* color){
     printf("\n");
 }
 
-void error_message(const char* text) {
+void error_message(const char *mesg) {
+    /* just prints an error like
+     * [ERROR]: some error in red color
+     */
     printf("[");
     cprint("ERROR", Colors.RED);
-    printf("]: %s\n", text);
+    printf("]: %s\n", mesg);
+}
+
+void error_emph_message(const char *mesg, __uint16_t start, __uint16_t end) {
+    /* similar to error_message, but will also emphasize characters from start to end like
+     * [ERROR]: some error in red
+     * ~~~~~~~~~~~~~~~~~~~~^^^^~~
+     */
+
+    __uint8_t preflen = 9;
+    error_message(mesg);
+    for (int i=0;i<preflen+strlen(mesg);i++) {
+        printf((i-preflen>=start && i-preflen<end)? "^":"~");
+    }
+    printf("\n");
 }
