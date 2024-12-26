@@ -37,7 +37,7 @@ void error_emph_message(const char *mesg, __uint16_t start, __uint16_t end) {
     __uint8_t preflen = 9;
     error_message(mesg);
     for (int i=0;i<preflen+strlen(mesg);i++) {
-        printf((i-preflen>=start && i-preflen<end)? "^":"~");
+        printf((i-preflen>=start && i-preflen<end)? "\x1b[0;31m^\x1b[0;37m":"~");
     }
     printf("\n");
 }
