@@ -61,7 +61,7 @@ struct token next_token_safe(const tchar_t *command) {
         }
 
         // command terms itself
-        else if (isalpha(sym) || strchr(command_allowed_symbols, sym)!=NULL) {
+        else if (isalnum(sym) || strchr(command_allowed_symbols, sym)!=NULL) {
             token.type = token_commandterm;
             token.length = 1;
 
