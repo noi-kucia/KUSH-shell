@@ -22,5 +22,5 @@ void cprintnl(const char* text, const char* color){
 void error_message(const char* text) {
     printf("[");
     cprint("ERROR", Colors.RED);
-    printf("]: %s", text);
+    printf("]: %s\n", text);
 }
