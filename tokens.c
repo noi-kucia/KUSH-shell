@@ -14,9 +14,6 @@ const char *token_type_names[] = {"error", "unknown token", "unfinished sequence
 "input redirect", "input redirect append", "output redirect", "output redirect append", "end"};
 const char *command_allowed_symbols = "./~_()-#%^[]+";
 const char *escape_chars = "\\ nrvtbf'\"";
-
-extern void error_message(const char* text);
-
 const char *white_characters = " \t\r\n\v\f";
 
 struct token next_token_safe(const tchar_t *command) {
