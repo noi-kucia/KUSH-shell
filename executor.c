@@ -51,6 +51,8 @@ void execute_sequence(struct token** sequence) {
         execlp("ls", "ls", "-l", NULL);  // example
     }
 
+    close(pipefd[1]); // closing it in the main process cuz it's not being read here
+    // (also to let the second process know that pipe's input is closed)
     waitpid(pid1, NULL, 0);
 
     // right side
@@ -68,6 +70,7 @@ void execute_sequence(struct token** sequence) {
         execlp("echo", "echo", NULL);  // example
     }
 
+    close(pipefd[0]);
     waitpid(pid2, NULL, 0); // waitpid of pid1 can also be here if we wanna execute 2 processes in parallel
     // if we delete waitpids, those processes will be executed in the background (could be useful later)
 }
