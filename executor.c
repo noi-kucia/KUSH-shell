@@ -5,6 +5,7 @@
 
 #include "executor.h"
 #include <stdlib.h>
+#include <unistd.h>
 
 // ; priority is lower than | or >/<
 
@@ -25,24 +26,46 @@ void execute_sequence(struct token** sequence) {
     //     printf(" - type: %s of length %d\n", token_type_names[token.type], token.length);
     // }
 
-    while (*sequence) {  // going through individual commands
+    // we should take care of pipe on the highest level cuz it's an operator with a lowest precedence
+    // pipe draft
 
-        // extracting the command (always first)
-        const struct token command = **(sequence);
-        if (command.type!=token_commandterm) {
-            char mesg[256];
-            snprintf(mesg, 256, "Invalid command %s", command.src);
-            error_message(mesg);
-            break;
-        }
-        else {
-            char command_name[command.length+1];
-            command_name[command.length] = '\0';
-            strncpy(command_name, command.src, command.length);
-            printf("executing command: ");
-            cprintnl(command_name, Colors.CYAN);
-            break;
-        }
+    // pipe creation
+    int pipefd[2];
+    if (pipe(pipefd) == -1) {
+        error_message("Pipe creation fault");
+        return;
+    }
+
+    // left side
+    pid_t pid1 = fork();
+    if (pid1 < 0) {
+        error_message("Fork fault");
+        return;
+    }
+
+    if (pid1 == 0) {
+        // child process
+        dup2(pipefd[1], STDOUT_FILENO); // redirecting output to the pipe entrance
+        close(pipefd[0]);
+        close(pipefd[1]);
+        execlp("ls", "ls", "-l", NULL);  // example
+    }
+
+    waitpid(pid1, NULL, 0);
+
+    // right side
+    pid_t pid2 = fork();
+    if (pid2 < 0) {
+        error_message("Fork fault");
+        return;
+    }
+
+    if (pid2 == 0) {
+        // child process
+        dup2(pipefd[0], STDIN_FILENO); // redirecting pipe output to the process input
+        close(pipefd[0]);
+        close(pipefd[1]);
+        execlp("echo", "echo", NULL);  // example
     }
 }
 
