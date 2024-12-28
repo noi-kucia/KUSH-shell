@@ -8,6 +8,7 @@
 #include "tokens.h"
 #include "print_utils.h"
 #include <string.h>
+#include <wait.h>
 
 void execute_sequence(struct token**);
 void free_sequence(struct token**);
