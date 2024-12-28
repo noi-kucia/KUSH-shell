@@ -67,6 +67,9 @@ void execute_sequence(struct token** sequence) {
         close(pipefd[1]);
         execlp("echo", "echo", NULL);  // example
     }
+
+    waitpid(pid2, NULL, 0); // waitpid of pid1 can also be here if we wanna execute 2 processes in parallel
+    // if we delete waitpids, those processes will be executed in the background (could be useful later)
 }
 
 void free_sequence(struct token** sequence) {
