@@ -12,7 +12,7 @@
 
 const char *token_type_names[] = {"error", "unknown token", "unfinished sequence", "empty", "command term", "semicolon", "pipe",
 "input redirect", "input redirect append", "output redirect", "output redirect append", "end"};
-const char *command_allowed_symbols = "./~_()-#%^[]+";
+const char *command_allowed_symbols = "./~_()-#%^[]+:";
 const char *escape_chars = "\\ nrvtbf'\"";
 const char *white_characters = " \t\r\n\v\f";
 
