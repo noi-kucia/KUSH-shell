@@ -34,6 +34,7 @@ struct token{
 struct token next_token_safe(const tchar_t *);
 struct token **get_tokens_safe(const tchar_t *);
 struct token **get_pipe_segment(struct token **prev_segment);
+struct token **get_next_command(struct token **prev_command);
 
 
 
