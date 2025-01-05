@@ -91,7 +91,7 @@ struct token next_token_safe(const tchar_t *command) {
 
                     }
                 }
-                else if (strchr(white_characters, *src)!=NULL) break;
+                else if (strchr(white_characters, *src)!=NULL || strchr("|;", *src)!=NULL) break;
                 else {
                     error_emph_prefix("Forbiden character has been found - ", token.src, token.length, token.length+1);
                     token.type = token_error;
