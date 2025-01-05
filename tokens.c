@@ -196,3 +196,12 @@ struct token **get_tokens_safe(const tchar_t *command) {
     free(token);
     return tokens;
 }
+
+struct token **get_pipe_segment(struct token **prev_segment) {
+    /* Takes a pointer to the previous segment and searches for the next pipe token.
+     * Returns a pointer to the token next to the pipe or to the end token if the pipe wasn't found.
+     */
+    struct token **new_segment=prev_segment+1;
+    while ((*new_segment)->type!=token_end||(*(new_segment-1))->type!=token_pipe);
+    return new_segment;
+}
