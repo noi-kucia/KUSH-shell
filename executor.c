@@ -7,72 +7,64 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-// ; priority is lower than | or >/<
+extern const char *token_type_names[];
 
-void execute_sequence(struct token** sequence) {
+void execute_sequence(struct token **sequence) {
     /* Takes a pointer to a sequence of token pointers as argument
      * and executes is as command.
      * If a sequence is wrong, the corresponding message will be printed on diagnostic output.
      */
 
-    //debug
-    // printf("tokens:\n");
-    // for (typeof(sequence)tc=sequence;*tc;tc++) {
-    //     char token_cont[120];
-    //     const struct token token = **tc;
-    //     strncpy(token_cont, token.src, token.length);
-    //     token_cont[token.length] = '\0';
-    //     cprint(token_cont, Colors.YELLOW);
-    //     printf(" - type: %s of length %d\n", token_type_names[token.type], token.length);
+
+    // pid_t pid = fork();
+    // int ipd[2];
+    // if (pid == -1) {
+    //     error_message("fork failed");
+    //     return;
     // }
+    // if (pid == 0) {
+    //     // dup2(ipd[1], STDOUT_FILENO);
+    //     printf("the child process has just started");
+    //     char data[100];
+    //     scanf("%s", data);
+    //     printf("%s\n", data);
+    //     // close(ipd[0]);
+    //     // close(opd[1]);
+    // }
+    // waitpid(pid, NULL, 0);
 
-    // we should take care of pipe on the highest level cuz it's an operator with a lowest precedence
-    // pipe draft
+    int ipfd[2], opfd[2];  // pipes
+    bool input_pipe_set = false;
 
-    // pipe creation
-    int pipefd[2];
-    if (pipe(pipefd) == -1) {
-        error_message("Pipe creation fault");
-        return;
+    // going through token sequences dividing them by pipes
+    for (struct token **segment=sequence;segment!=nullptr;segment=get_pipe_segment(segment)) {
+
+        // going through individual command within segments between pipes.
+        // the command can start with any token and ends with end, semicolon or pipe token (so can be empty)
+        for (struct token **command=segment;command!=nullptr;command=get_next_command(command)) {
+
+            // debug
+            // cprintnl("new command start", Colors.RED);
+            // for (typeof(command)tc=command;*tc;tc++) {
+            //     if ((**tc).type==token_semicolon||(**tc).type==token_pipe) {
+            //         cprintnl("command end", Colors.RED);
+            //         break;
+            //     }
+            //     char token_cont[120];
+            //     const struct token token = **tc;
+            //     strncpy(token_cont, token.src, token.length);
+            //     token_cont[token.length] = '\0';
+            //     printf("\t");
+            //     cprint(token_cont, Colors.YELLOW);
+            //     printf(" - type: %s of length %d\n", token_type_names[token.type], token.length);
+            // }
+
+        }
+
+        // cprintnl("PIPE or an end", Colors.GREEN);  // debug
+        input_pipe_set = true;  // in the next ev. iteration input will be redirected from the pipe instead of STDIN
     }
 
-    // left side
-    pid_t pid1 = fork();
-    if (pid1 < 0) {
-        error_message("Fork fault");
-        return;
-    }
-
-    if (pid1 == 0) {
-        // child process
-        dup2(pipefd[1], STDOUT_FILENO); // redirecting output to the pipe entrance
-        close(pipefd[0]);
-        close(pipefd[1]);
-        execlp("ls", "ls", "-l", NULL);  // example
-    }
-
-    close(pipefd[1]); // closing it in the main process cuz it's not being read here
-    // (also to let the second process know that pipe's input is closed)
-    waitpid(pid1, NULL, 0);
-
-    // right side
-    pid_t pid2 = fork();
-    if (pid2 < 0) {
-        error_message("Fork fault");
-        return;
-    }
-
-    if (pid2 == 0) {
-        // child process
-        dup2(pipefd[0], STDIN_FILENO); // redirecting pipe output to the process input
-        close(pipefd[0]);
-        close(pipefd[1]);
-        execlp("echo", "echo", NULL);  // example
-    }
-
-    close(pipefd[0]);
-    waitpid(pid2, NULL, 0); // waitpid of pid1 can also be here if we wanna execute 2 processes in parallel
-    // if we delete waitpids, those processes will be executed in the background (could be useful later)
 }
 
 void free_sequence(struct token** sequence) {
