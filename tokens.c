@@ -201,7 +201,20 @@ struct token **get_pipe_segment(struct token **prev_segment) {
     /* Takes a pointer to the previous segment and searches for the next pipe token.
      * Returns a pointer to the token next to the pipe or a nullptr if the pipe wasn't found.
      */
-    struct token **new_segment=prev_segment+1;
-    while ((*new_segment)->type!=token_end||(*(new_segment-1))->type!=token_pipe);
-    return (*new_segment)->type!=token_end? new_segment : nullptr;
+    struct token **next_segment=prev_segment+1;
+    while ((*next_segment)->type!=token_end||(*(next_segment-1))->type!=token_pipe) next_segment++;
+    return (*(next_segment-1))->type==token_pipe? next_segment : nullptr;
+}
+
+struct token **get_next_command(struct token **prev_command) {
+    /* Takes a pointer to the previous command and searches for the next semicolon token.
+     * Reruns a pointer to the token next to semicolon or a nullptr if it wasn't found.
+     */
+    struct token **next_command=prev_command+1;
+    while ((*next_command)->type!=token_end||
+           (*next_command)->type!=token_pipe||
+           (*(next_command-1))->type!=token_semicolon) {
+        next_command++;
+    }
+    return (*(next_command-1))->type==token_semicolon? next_command : nullptr;
 }
