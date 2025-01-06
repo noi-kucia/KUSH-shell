@@ -10,6 +10,7 @@
 #include <string.h>
 #include <wait.h>
 #include <errno.h>
+#include <fcntl.h>
 
 void execute_sequence(struct token**);
 void free_sequence(struct token**);
