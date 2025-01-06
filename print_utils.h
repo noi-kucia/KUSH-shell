@@ -17,6 +17,7 @@ typedef struct{
     const char* YELLOW;
     const char* CYAN;
     const char* BLUE;
+    const char* ORANGE;
     const char* CLEAR;
 } colors_t;
 

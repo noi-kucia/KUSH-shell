@@ -5,8 +5,8 @@
 #include "print_utils.h"
 
 colors_t Colors = {"\x1b[0;37m",
-    "\x1b[0;30m", "\x1b[0;31m", "\x1b[0;32m", "\x1b[0;35m", "\x1b[0;33m",
-    "\x1b[0;36m", "\x1b[34m", "\x1b[0;37m"};
+    "\x1b[0;30m", "\x1b[0;31m", "\x1b[0;32m", "\x1b[0;35m", "\x1b[1;33m",
+    "\x1b[0;36m", "\x1b[34m","\x1b[0;33m", "\x1b[0;37m"};
 
 void cprint(const char* text, const char* color){
     // function used to print text with certain color
