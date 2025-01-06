@@ -9,6 +9,7 @@
 #include "print_utils.h"
 #include <string.h>
 #include <wait.h>
+#include <errno.h>
 
 void execute_sequence(struct token**);
 void free_sequence(struct token**);
