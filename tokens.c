@@ -233,7 +233,6 @@ struct token **get_arguments(struct token **command) {
      * null-terminated array of pointers to tokens that should be passed to exec* function including command name.
      * Will terminate when semicolon, pipe or redirect token is found.
      * If no arguments are found, an array with nullptr will be returned.
-     * If realloc fails, nullptr is returned.
      */
 
     size_t argc=0, arrsize=2;
@@ -244,8 +243,8 @@ struct token **get_arguments(struct token **command) {
             arrsize <<= 1;
             struct token **arg_rlctd = realloc(arguments, arrsize*sizeof(struct token *));
             if (arg_rlctd==nullptr) {
-                free(arguments);
-                return nullptr;
+                perror("realloc failed");
+                exit(15);
             }
             arguments = arg_rlctd;
         }
@@ -283,8 +282,9 @@ char **get_names_after_token(struct token **command, enum token_types type) {
                     perror("allocation error");
                     exit(14);
                 }
-                strncpy(name, (*command)->src, (*command)->length); // extracting the name
-                if (namec+2>arrsize) {  // reallocating the array if needed
+
+                // reallocating the array if needed
+                if (namec+2>arrsize) {
                     arrsize <<= 1;
                     char **names_rlct = realloc(names, arrsize * sizeof(char *));
                     if (names_rlct) {
@@ -295,6 +295,8 @@ char **get_names_after_token(struct token **command, enum token_types type) {
                         exit(13);
                     }
                 }
+                strncpy(name, (*command)->src, (*command)->length); // extracting the name
+                name[(*command)->length] = '\0';
                 names[namec++] = name;  // adding a name to the array
             }
         } else command++;
