@@ -206,6 +206,8 @@ struct token **get_pipe_segment(struct token **prev_segment) {
     /* Takes a pointer to the previous segment and searches for the next pipe token.
      * Returns a pointer to the token next to the pipe or a nullptr if the pipe wasn't found.
      */
+
+    if (*prev_segment==nullptr) return nullptr;
     struct token **next_segment=prev_segment+1;
     while (*next_segment&&(*(next_segment-1))->type!=token_pipe) next_segment++;
     return *next_segment? next_segment : nullptr;
@@ -215,6 +217,8 @@ struct token **get_next_command(struct token **prev_command) {
     /* Takes a pointer to the previous command and searches for the next semicolon token.
      * Reruns a pointer to the token next to semicolon or a nullptr if it wasn't found.
      */
+
+    if (*prev_command==nullptr) return nullptr;
     struct token **next_command=prev_command+1;
     while (*next_command&&
            (*next_command)->type!=token_pipe&&
@@ -263,4 +267,39 @@ char **get_names_after_token(struct token **command, enum token_types type) {
      *
      * memory should be than freed.
      */
+
+    size_t arrsize = 2, namec = 0;
+    char **names = malloc(arrsize*sizeof(char *));
+
+    // going through all tokens till the end
+    while (*command) {
+
+        // looking for token with a specified type
+        if ((*command)->type==type) {
+            // all extracting all names of command terms after this token
+            while (*(++command) && (*command)->type==token_commandterm) {
+                char *name = malloc(((*command)->length+1 )* sizeof(char));  // allocating memory for a name
+                if (name==nullptr) {
+                    perror("allocation error");
+                    exit(14);
+                }
+                strncpy(name, (*command)->src, (*command)->length); // extracting the name
+                if (namec+2>arrsize) {  // reallocating the array if needed
+                    arrsize <<= 1;
+                    char **names_rlct = realloc(names, arrsize * sizeof(char *));
+                    if (names_rlct) {
+                        names = names_rlct;
+                    } else {
+                        free(names);
+                        perror("allocation error");
+                        exit(13);
+                    }
+                }
+                names[namec++] = name;  // adding a name to the array
+            }
+        } else command++;
+    }
+
+    names[namec] = nullptr;
+    return names;
 }
