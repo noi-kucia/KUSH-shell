@@ -59,48 +59,34 @@ void execute_sequence(struct token **sequence) {
         // the command can start with any token and ends with end, semicolon or pipe token (so can be empty)
         for (struct token **command=segment;command!=nullptr;command=get_next_command(command)) {
 
-            /*// debug
-            // cprintnl("new command start, arguments are:", Colors.RED);
-            // struct token **argv = get_arguments(command);
-            // for (typeof(argv)tc=argv;;tc++) {
-            //     if (*tc==nullptr) {
-            //         // when all arguments were written, freeing the memory and printing redirections
-            //         free(argv);
-            //         printf("input redirect sources:\n");
-            //         auto inredirs = get_names_after_token(command, token_inredir);
-            //         for (typeof(inredirs)tc=inredirs;*tc;tc++) {
-            //             cprintnl(*tc, Colors.GREEN);
-            //         }
-            //         printf("output redirect destinations:\n");
-            //         auto outredirs = get_names_after_token(command, token_outredir);
-            //         for (typeof(outredirs)tc=outredirs;*tc;tc++) {
-            //             cprintnl(*tc, Colors.PURPLE);
-            //         }
-            //         printf("output redirect with append destinations:\n");
-            //         auto outredirsap = get_names_after_token(command, token_outredirap);
-            //         for (typeof(outredirsap)tc=outredirsap;*tc;tc++) {
-            //             cprintnl(*tc, Colors.ORANGE);
-            //         }
-            //         break;
-            //     }
-            //     // printing arguments
-            //     char token_cont[120];
-            //     const struct token token = **tc;
-            //     strncpy(token_cont, token.src, token.length);
-            //     token_cont[token.length] = '\0';
-            //     printf("\t");
-            //     cprintnl(token_cont, Colors.YELLOW);
-            //     // printf(" - type: %s of length %d\n", token_type_names[token.type], token.length);
-            // }
-            // cprintnl("command end", Colors.RED);*/
-
             // getting command arguments
             // TODO: All argument names must be processed to replace ~ by $HOME, delete quotes and replace escape characters
-            // TODO: I think it should be done in a new process_argument_names function
+            // TODO: I think it should be done within function that creates token of commandterm type
             char **arguments;
             if((arguments=get_argument_names(command)) == nullptr) {
                 perror("unable to get arguments");
                 exit(22);
+            }
+            const char *command_name = arguments[0];
+            if (command_name == nullptr) continue;  // ignoring empty commands
+
+            // getting input redirections
+            char **input_names = get_names_after_token(command, token_inredir);
+            const bool should_take_redirection = *input_names? true : false;
+
+            // getting output redirections
+            char **output_names = get_names_after_token(command, token_outredir);
+            char **output_names_ap = get_names_after_token(command, token_outredirap);
+            const bool should_take_output = *output_names||*output_names_ap? true : false;
+
+            // built-in functions case
+            if (strcmp(command_name,"cd")==0) {
+                builtin_cd(arguments);
+                continue;
+            }
+            if (strcmp(command_name,"help")==0) {
+                // TODO: call built-in help command
+                continue;
             }
 
             // forking to execute a command
@@ -111,54 +97,92 @@ void execute_sequence(struct token **sequence) {
             }
             if (pid == 0) {
                 // child process
-                const char *command_name = arguments[0];
 
-                // ignoring empty commands
-                if (command_name == nullptr) continue;
+                // replacing stdin if needed
+                if (should_take_redirection) {
 
-                // built-in functions
-                if (strcmp(command_name,"cd")==0) {
-                    builtin_cd(arguments);
-                    continue;
+                    // creating a pipe to redirect all inputs through
+                    int fd[2];
+                    if (pipe(fd)) {
+                        perror("pipe failed");
+                        exit(31);
+                    }
+
+                    // reading files to the pipe
+                    for (char **name=input_names;*name;name++) {
+                        const int fptr = open(*name, O_RDONLY);
+                        if (!fptr) {
+                            char msg[256];
+                            sprintf(msg, "file doesn't exist - %s", *name);
+                            perror(msg);
+                            continue;
+                        }
+                        constexpr ssize_t buffer_size = 256;
+                        ssize_t bytes_read = 0;
+                        char buffer[buffer_size];
+                        while ((bytes_read = read(fptr, buffer,  buffer_size)) > 0) {
+                            write(fd[1], buffer, bytes_read);
+                        }
+                        if (bytes_read==-1) {
+                            perror("error when reading one of the input files");
+                        }
+                        close(fptr);
+                    }
+
+                    // replacing input with a pipe
+                    dup2(fd[0],STDIN_FILENO);
+                    close(fd[0]);
+                    close(fd[1]);
                 }
-                else if (strcmp(command_name,"help")==0) {
-                    // TODO: call built-in help command
-                    continue;
-                }
-
-                // calling external program otherwise
-                dup2(pfd[1], STDOUT_FILENO); // replacing output
-                if (input_pipe_set) { // replacing input
+                else if (input_pipe_set) {
+                    // if there's no redirection, but the input pipe is set, replacing stdin with it
                     dup2(oldfd, STDIN_FILENO);
                     close(oldfd);
                 }
+
+                // replacing stdout
+                dup2(pfd[1],STDOUT_FILENO);
                 close(pfd[0]);
                 close(pfd[1]);
+
+                // exec call
                 execvp(command_name, arguments);
                 char msg[0xFF];
                 sprintf(msg, "exec failure of  [%s]\nerrno - %d", command_name, errno);
                 error_message(msg);
 
             }
+
+            // waiting for the process end
             waitpid(pid, nullptr, 0);
-            input_pipe_set = false;  // even if only one command was executed, the next one won't use it again
+
+            // if there were no redirections but an input pipe, it was used instead and now must be closed
+            if (!should_take_redirection && input_pipe_set) {
+                input_pipe_set = false;
+                close(oldfd);
+            }
 
             // freeing memory
             for (char **arg=arguments;*arg!=nullptr;arg++) free(*arg);
+            for (char **name=input_names;*name;name++) free(*name);
+            for (char **name=output_names;*name;name++) free(*name);
             free(arguments);
+            free(input_names);
+            free(output_names);
 
         }
 
-        // cprintnl("PIPE or an end", Colors.GREEN);  // debug
         close(pfd[1]);
-        oldfd = pfd[0];  // file descriptor to be read as input in the next iteration (or will be flushed to the STDOUT)
+        if (input_pipe_set) close(oldfd); // if it wasn't used and therefore closed in a process before
         input_pipe_set = true;  // in the next ev. iteration input will be redirected from the pipe instead of STDIN
+        oldfd = pfd[0];  // file descriptor to be read as input in the next iteration (or will be flushed to the STDOUT)
     }
 
     // flushing pipe output to the STDOUT
-    size_t bytes_read, buff_size = 128;
+    ssize_t bytes_read;
+    size_t buff_size = 128;
     char buffer[buff_size];
-    while ((bytes_read = read(oldfd, buffer, buff_size)) > 0) {
+    while ((bytes_read = read(oldfd, buffer, buff_size)) > 0){
         // Write to stdout
         if (write(STDOUT_FILENO, buffer, bytes_read) != bytes_read) {
             perror("flush error");
