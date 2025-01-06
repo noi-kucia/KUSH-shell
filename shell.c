@@ -70,21 +70,23 @@ void prompt() {
     // getting a path into the buffer
     uint16_t path_max_size = 64;
     uint_fast16_t buff_size = path_max_size;
-    char* path = malloc(path_max_size);
-    char* buff = malloc(buff_size);
+    char *path = malloc(path_max_size);
+    char *buff = malloc(buff_size);
     if (path==nullptr||buff==nullptr) {
         error_message("Failed to allocate memory for the shell command prompt");
         return;
     }
     for (uint8_t iteration=1;iteration<=11;iteration++){
-        char* res = getcwd(buff, buff_size);
+        char *res = getcwd(buff, buff_size);
         if (res==NULL && errno==ERANGE) {// if the path is longer than max size
             buff_size *= 2;
-            buff = realloc(buff, buff_size);
-            if (buff==nullptr) {
+            char *buff_rlctd = realloc(buff, buff_size);
+            if (buff_rlctd==nullptr) {
                 error_message("Failed to allocate memory for the buffer");
+                free(buff);
                 break;
             }
+            buff = buff_rlctd;
         }
         else {
             break;
