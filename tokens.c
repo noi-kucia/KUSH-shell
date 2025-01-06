@@ -296,7 +296,9 @@ char **get_names_after_token(struct token **command, enum token_types type) {
     char **names = malloc(arrsize*sizeof(char *));
 
     // going through all tokens till the end
-    while (*command) {
+    while (*command &&
+          (*command)->type!=token_pipe &&
+          (*command)->type!=token_semicolon) {
 
         // looking for token with a specified type
         if ((*command)->type==type) {
