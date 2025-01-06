@@ -44,24 +44,25 @@ void execute_sequence(struct token **sequence) {
         for (struct token **command=segment;command!=nullptr;command=get_next_command(command)) {
 
             // debug
-            // cprintnl("new command start", Colors.RED);
-            // for (typeof(command)tc=command;*tc;tc++) {
-            //     if ((**tc).type==token_semicolon||(**tc).type==token_pipe) {
-            //         cprintnl("command end", Colors.RED);
-            //         break;
-            //     }
-            //     char token_cont[120];
-            //     const struct token token = **tc;
-            //     strncpy(token_cont, token.src, token.length);
-            //     token_cont[token.length] = '\0';
-            //     printf("\t");
-            //     cprint(token_cont, Colors.YELLOW);
-            //     printf(" - type: %s of length %d\n", token_type_names[token.type], token.length);
-            // }
+            cprintnl("new command start, arguments are:", Colors.RED);
+            for (typeof(command)tc=get_arguments(command);*tc;tc++) {
+                if (tc==nullptr||*tc==nullptr) {
+                    free(tc);
+                    cprintnl("command end", Colors.RED);
+                    break;
+                }
+                char token_cont[120];
+                const struct token token = **tc;
+                strncpy(token_cont, token.src, token.length);
+                token_cont[token.length] = '\0';
+                printf("\t");
+                cprintnl(token_cont, Colors.YELLOW);
+                // printf(" - type: %s of length %d\n", token_type_names[token.type], token.length);
+            }
 
         }
 
-        // cprintnl("PIPE or an end", Colors.GREEN);  // debug
+        cprintnl("PIPE or an end", Colors.GREEN);  // debug
         input_pipe_set = true;  // in the next ev. iteration input will be redirected from the pipe instead of STDIN
     }
 
