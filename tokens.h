@@ -36,6 +36,7 @@ struct token **get_pipe_segment(struct token **prev_segment);
 struct token **get_next_command(struct token **prev_command);
 struct token **get_arguments(struct token **command);
 char **get_names_after_token(struct token **command, enum token_types type);
+char **get_argument_names(struct token **command);
 
 
 #endif //TOKENS_H

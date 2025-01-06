@@ -255,6 +255,31 @@ struct token **get_arguments(struct token **command) {
     return arguments;
 }
 
+char **get_argument_names(struct token **command) {
+    /* Same as get_arguments does, returns a null-terminated array of pointers,
+     * but instead of tokens, the elements are newly allocated strings that contain
+     * token's content.
+     * Or a nullptr if a get_arguments returned it.
+     *
+     * Returned array and its elements must be freed after using!
+     */
+
+    struct token **arguments = get_arguments(command);
+    if (arguments==nullptr) return nullptr;
+    size_t arrsize=1, argc=0;
+    for (struct token **arg=arguments; *arg!=nullptr; arg++) arrsize++;
+    char **arg_names = malloc(arrsize*sizeof(char *));
+    if (!arg_names) return nullptr;
+    for (struct token **arg=arguments; *arg!=nullptr; arg++) {
+        char *arg_name = malloc(sizeof(char*)*((*arg)->length+1));
+        strncpy(arg_name, (*arg)->src, (*arg)->length);
+        arg_name[(*arg)->length] = '\0';
+        arg_names[argc++] = arg_name;
+    }
+    arg_names[argc] = nullptr;
+    return arg_names;
+}
+
 char **get_names_after_token(struct token **command, enum token_types type) {
     /* Takes a null-terminated sequence of pointers to tokens and a type number as arguments.
      * Return an array of C-strings representing content of command term tokens
