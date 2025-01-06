@@ -166,10 +166,12 @@ struct token **get_tokens_safe(const tchar_t *command) {
         // checking is there enough space in the array
         if (tokenc >= token_buffsize) {
             token_buffsize *= 2;
-            if (realloc(tokens, token_buffsize*sizeof(void*)) == nullptr) { // reallocation fault
+            typeof(tokens) tokens_rltd = realloc(tokens, token_buffsize*sizeof(void*));
+            if (tokens_rltd == nullptr) { // reallocation fault
                 free(tokens);
                 return nullptr;
             }
+            tokens = tokens_rltd;
         }
 
         previous_type = token->type;
@@ -217,4 +219,32 @@ struct token **get_next_command(struct token **prev_command) {
         next_command++;
     }
     return *next_command&&(*(next_command-1))->type==token_semicolon? next_command : nullptr;
+}
+
+struct token **get_arguments(struct token **command) {
+    /* Takes a pointer to a sequence of tokens and returns a pointer to a newly allocated
+     * null-terminated array of pointers to tokens that should be passed to exec* function including command name.
+     * Will terminate when semicolon, pipe or redirect token is found.
+     * If no arguments are found, an array with nullptr will be returned.
+     * If realloc fails, nullptr is returned.
+     */
+
+    size_t argc=0, arrsize=2;
+    struct token **arguments = malloc(arrsize*sizeof(struct token *));
+    if (!arguments) return nullptr;
+    while(*command && (*command)->type==token_commandterm) {
+        if (argc+2>arrsize) {
+            arrsize <<= 1;
+            struct token **arg_rlctd = realloc(arguments, arrsize*sizeof(struct token *));
+            if (arg_rlctd==nullptr) {
+                free(arguments);
+                return nullptr;
+            }
+            arguments = arg_rlctd;
+        }
+        arguments[argc++] = *command;
+        command++;
+    }
+    arguments[argc] = nullptr;
+    return arguments;
 }
