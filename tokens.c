@@ -11,10 +11,11 @@
 #include "executor.h"
 
 const char *token_type_names[] = {"error", "unknown token", "unfinished sequence", "empty", "command term", "semicolon", "pipe",
-"input redirect", "input redirect append", "output redirect", "output redirect append", "end"};
+"input redirect", "output redirect", "output redirect append", "end"};
 const char *command_allowed_symbols = "./~_()-#%^[]+:";
 const char *escape_chars = "\\ nrvtbf'\"";
 const char *white_characters = " \t\r\n\v\f";
+const char *term_terminate_symbols = "|;<>";
 
 struct token next_token_safe(const tchar_t *command) {
     /* Part of the lexer functionality serves for receiving one token.
@@ -91,13 +92,14 @@ struct token next_token_safe(const tchar_t *command) {
 
                     }
                 }
-                else if (strchr(white_characters, *src)!=NULL || strchr("|;", *src)!=NULL) break;
                 else {
-                    error_emph_prefix("Forbiden character has been found - ", token.src, token.length, token.length+1);
-                    token.type = token_error;
-                    return token;
+                    if (strchr(white_characters, *src)!=NULL || strchr(term_terminate_symbols, *src)!=NULL) break;
+                    else {
+                        error_emph_prefix("Forbiden character has been found - ", token.src, token.length, token.length+1);
+                        token.type = token_error;
+                        return token;
+                    }
                 }
-
             }
         }
 
@@ -111,9 +113,10 @@ struct token next_token_safe(const tchar_t *command) {
                     token.type = token_semicolon;
                     break;
                 case '<':
-                    if (*(src) == '<' && *(src+1)!='<') {
-                        token.type = token_inredirap;
+                    if (*(src) == '<') {
+                        token.type = token_unknown;
                         token.length = 2;
+                        error_emph_prefix("Token '<<' is forbidden - ", token.src, 0, 2);
                     }
                     else token.type = token_inredir;
                     break;
@@ -247,4 +250,17 @@ struct token **get_arguments(struct token **command) {
     }
     arguments[argc] = nullptr;
     return arguments;
+}
+
+char **get_names_after_token(struct token **command, enum token_types type) {
+    /* Takes a null-terminated sequence of pointers to tokens and a type number as arguments.
+     * Return an array of C-strings representing content of command term tokens
+     * following all tokens of a specified type.
+     * For instance:
+     *   command is [say "hello <3" bla-bla < a.txt b > output < file]
+     *   type is token_inredir (< symbol)
+     *   than the function will return ["a.txt", "b", "file"]
+     *
+     * memory should be than freed.
+     */
 }
