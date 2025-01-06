@@ -43,12 +43,17 @@ void execute_sequence(struct token **sequence) {
      * If a sequence is wrong, the corresponding message will be printed on diagnostic output.
      */
 
-    int pfd[2];  // pipe
+    int pfd[2], oldfd;  // pipe
     bool input_pipe_set = false;
 
     // going through token sequences dividing them by pipes
     for (struct token **segment=sequence;segment!=nullptr;segment=get_pipe_segment(segment)) {
-        pipe(pfd); // opening pipe for all output inside this iteration
+
+        // opening a pipe to redirect all output to
+        if (pipe(pfd)) {
+            perror("pipe failed");
+            exit(25);
+        }
 
         // going through individual command within segments between pipes.
         // the command can start with any token and ends with end, semicolon or pipe token (so can be empty)
@@ -122,7 +127,11 @@ void execute_sequence(struct token **sequence) {
                 }
 
                 // calling external program otherwise
-                dup2(pfd[1], STDOUT_FILENO);
+                dup2(pfd[1], STDOUT_FILENO); // replacing output
+                if (input_pipe_set) { // replacing input
+                    dup2(oldfd, STDIN_FILENO);
+                    close(oldfd);
+                }
                 close(pfd[0]);
                 close(pfd[1]);
                 execvp(command_name, arguments);
@@ -141,7 +150,20 @@ void execute_sequence(struct token **sequence) {
         }
 
         // cprintnl("PIPE or an end", Colors.GREEN);  // debug
+        close(pfd[1]);
+        oldfd = pfd[0];  // file descriptor to be read as input in the next iteration (or will be flushed to the STDOUT)
         input_pipe_set = true;  // in the next ev. iteration input will be redirected from the pipe instead of STDIN
+    }
+
+    // flushing pipe output to the STDOUT
+    size_t bytes_read, buff_size = 128;
+    char buffer[buff_size];
+    while ((bytes_read = read(oldfd, buffer, buff_size)) > 0) {
+        // Write to stdout
+        if (write(STDOUT_FILENO, buffer, bytes_read) != bytes_read) {
+            perror("flush error");
+            exit(47);
+        }
     }
 
 }
