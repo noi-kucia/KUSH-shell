@@ -170,8 +170,9 @@ void execute_sequence(struct token **sequence) {
                 // exec call
                 execvp(command_name, arguments);
                 char msg[0xFF];
-                sprintf(msg, "exec failure of  [%s]\nerrno - %d", command_name, errno);
-                error_message(msg);
+                sprintf(msg, "exec failure of  [%s]", command_name);
+                perror(msg);
+                return; // if a command in a sequence fails, it's too dangerous to continue execution
 
             }
 
