@@ -57,7 +57,7 @@ void builtin_help() {
     printf("\n");
     cprintnl("usefull features:", Colors.GREEN);
     printf("* In paths tilda (~) will be replaces with HOME environmental variable path if stands as a first symbol and before a slash (/)\n");
-    printf("   for instance:  ~/Desktop/homework.png -> /home/user/homework.png");
+    printf("   for instancebuiltin_exit:  ~/Desktop/homework.png -> /home/user/homework.png");
     printf("* The tokens (arguments and commands) are split by white characters or operators like pipe.\n"
            "But if you wanna use one of them or just put some huge text, you can use quotes (both ' and \").\n"
            "The content inside it will be interpreted as a singletoken.");
@@ -69,6 +69,11 @@ void builtin_help() {
     printf("* help - command you are using rn\n");
     printf("* cd [path] - command used to change current working directory to path or to the home path if it wasn't specified.");
     printf("\n\n");
+}
+
+void builtin_exit() {
+    cprintnl("\nGoodbye!", Colors.ORANGE);
+    exit(EXIT_SUCCESS);
 }
 
 void execute_sequence(struct token **sequence) {
@@ -122,6 +127,10 @@ void execute_sequence(struct token **sequence) {
             }
             if (strcmp(command_name,"help")==0) {
                 builtin_help();
+                continue;
+            }
+            if (strcmp(command_name, "exit")==0) {
+                builtin_exit();
                 continue;
             }
 
