@@ -68,7 +68,7 @@ void builtin_help() {
     cprintnl("built-ins:", Colors.PURPLE);
     printf("* help - command you are using rn\n");
     printf("* cd [path] - command used to change current working directory to path or to the home path if it wasn't specified.");
-    printf("\n");
+    printf("\n\n");
 }
 
 void execute_sequence(struct token **sequence) {
