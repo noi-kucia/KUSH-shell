@@ -194,9 +194,11 @@ void execute_sequence(struct token **sequence) {
                 }
                 else {
                     // redirecting to global pipe
-                    dup2(pfd[1],STDOUT_FILENO);
-                    close(pfd[0]);
-                    close(pfd[1]);
+                    if (get_pipe_segment(segment)!=nullptr) {  // if there's a pipe after it
+                        dup2(pfd[1],STDOUT_FILENO);
+                        close(pfd[0]);
+                        close(pfd[1]);
+                    }
                 }
 
                 // exec call
