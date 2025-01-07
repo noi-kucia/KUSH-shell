@@ -37,6 +37,28 @@ int builtin_cd(char **arguments) {
     return res;
 }
 
+void builtin_help() {
+    /* prints a help message */
+    printf("\n\n");
+    printf("KUSH v"); cprintnl("0.5.1", Colors.YELLOW);
+    printf("\nsupported syntax elements:\n");
+    cprint("pipes", Colors.CYAN);
+    printf(" (|) - allows to redirect an stdout from all previous commands before to stdin of the next ones\n");
+    cprint("redirection", Colors.CYAN);
+    printf(" (< or > or >>) operator same as in bash/zsh opens a specified file and replaces std(in/out) with it.\n");
+    printf("Has a higher precedence than pipe operator, so if > or >> operator was used, pipe won't get this stdout,\n");
+    printf("same situation with input redirections. There could be several operators simultaneously or several file names after every of them.\n");
+    printf("In this case, the only thing matters is an order they are specified.\n");
+    printf("    Syntax: command arg1 arg2 < b.txt a.txt > out.txt\n");
+    printf("    Here stdin will be replaced with a content of b.txt+a.txt (b.txt will be read in first) and stdout will be written into out.txt.\n");
+    cprint("semicolons", Colors.CYAN);
+    printf(" (;) allows to execute several commands sequentially.\n");
+    printf("    Syntax: command1;command2;command3\n");
+    printf("The stdout of those commands is joined, so if it is redirected by a pipe operator,\n");
+    printf("the next command (with not redirected input) will receive on stdin stdout1+stdout2+stdout3.\n");
+    printf("\n");
+}
+
 void execute_sequence(struct token **sequence) {
     /* Takes a pointer to a sequence of token pointers as argument
      * and executes is as command.
@@ -85,7 +107,7 @@ void execute_sequence(struct token **sequence) {
                 continue;
             }
             if (strcmp(command_name,"help")==0) {
-                // TODO: call built-in help command
+                builtin_help();
                 continue;
             }
 
