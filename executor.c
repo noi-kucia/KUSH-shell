@@ -77,7 +77,7 @@ void execute_sequence(struct token **sequence) {
      * If a sequence is wrong, the corresponding message will be printed on diagnostic output.
      */
 
-    int pfd[2], oldfd;  // pipe
+    int pfd[2], oldfd, opfd[2];  // pipe
     bool input_pipe_set = false;
 
     // going through token sequences dividing them by pipes
@@ -106,12 +106,14 @@ void execute_sequence(struct token **sequence) {
 
             // getting input redirections
             char **input_names = get_names_after_token(command, token_inredir);
-            const bool should_take_redirection = *input_names? true : false;
+            const bool should_redirect_input = *input_names!=nullptr;
 
             // getting output redirections
             char **output_names = get_names_after_token(command, token_outredir);
             char **output_names_ap = get_names_after_token(command, token_outredirap);
-            const bool should_take_output = *output_names||*output_names_ap? true : false;
+            const bool should_redirect_output = *output_names||*output_names_ap;
+            if (should_redirect_output) pipe(opfd);  //  creating a pipe to redirect the output
+
 
             // built-in functions case
             if (strcmp(command_name,"cd")==0) {
@@ -132,8 +134,8 @@ void execute_sequence(struct token **sequence) {
             if (pid == 0) {
                 // child process
 
-                // replacing stdin if needed
-                if (should_take_redirection) {
+                // replacing stdin
+                if (should_redirect_input) {
 
                     // creating a pipe to redirect all inputs through
                     int fd[2];
@@ -175,14 +177,23 @@ void execute_sequence(struct token **sequence) {
                 }
 
                 // replacing stdout
-                dup2(pfd[1],STDOUT_FILENO);
-                close(pfd[0]);
-                close(pfd[1]);
+                if (should_redirect_output) {
+                    // redirecting to special pipe that allows to redirect it in the main process to many files
+                    dup2(opfd[1], STDOUT_FILENO);
+                    close(opfd[1]);
+                    close(opfd[0]);
+                }
+                else {
+                    // redirecting to global pipe
+                    dup2(pfd[1],STDOUT_FILENO);
+                    close(pfd[0]);
+                    close(pfd[1]);
+                }
 
                 // exec call
                 execvp(command_name, arguments);
                 char msg[0xFF];
-                sprintf(msg, "exec failure of  [%s]", command_name);
+                sprintf(msg, "exec failure of [%s]", command_name);
                 perror(msg);
                 _exit(49322);
 
@@ -191,13 +202,38 @@ void execute_sequence(struct token **sequence) {
             // waiting for the process end
             int status;
             waitpid(pid, &status, 0);
-            if (WIFEXITED(status) && WEXITSTATUS(status)==49322) {
-                // if a command in a sequence fails, it's too dangerous to continue execution
-                return;
+
+            // redirecting output to specified files from opfd
+            if (should_redirect_output) {
+                close(opfd[1]);
+                // opening all files (total mess)
+                size_t olen=0, oaplen=0;
+                ssize_t bytes_read;
+                size_t buff_size = 128;
+                char buffer[buff_size];
+                while ((bytes_read = read(opfd[0], buffer, buff_size)) > 0){
+                    // Write to all files
+                    for (char **name=output_names;*name;name++) {
+                        const int fptr = open(*name, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+                        if (write(fptr, buffer, bytes_read) != bytes_read) {
+                            perror("writing to file error (output redirection)");
+                        }
+                        close(fptr);
+                    }
+                    for (char **name=output_names_ap;*name;name++) {
+                        const int fptr = open(*name, O_WRONLY | O_CREAT | O_APPEND, 0666);
+                        if (write(fptr, buffer, bytes_read) != bytes_read) {
+                            perror("writing to file error (output redirection)");
+                        }
+                        close(fptr);
+                    }
+                }
+                close(opfd[0]);
+
             }
 
             // if there were no redirections but an input pipe, it was used instead and now must be closed
-            if (!should_take_redirection && input_pipe_set) {
+            if (!should_redirect_input && input_pipe_set) {
                 input_pipe_set = false;
                 close(oldfd);
             }
@@ -209,6 +245,14 @@ void execute_sequence(struct token **sequence) {
             free(arguments);
             free(input_names);
             free(output_names);
+
+            // if a command in a sequence fails, it's too dangerous to continue execution
+            if (WIFEXITED(status) && WEXITSTATUS(status)==49322) {
+                close(pfd[1]);
+                close(pfd[0]);
+                if (input_pipe_set) close(oldfd);
+                return;
+            }
 
         }
 
