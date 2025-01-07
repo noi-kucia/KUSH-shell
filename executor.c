@@ -172,12 +172,17 @@ void execute_sequence(struct token **sequence) {
                 char msg[0xFF];
                 sprintf(msg, "exec failure of  [%s]", command_name);
                 perror(msg);
-                return; // if a command in a sequence fails, it's too dangerous to continue execution
+                _exit(49322);
 
             }
 
             // waiting for the process end
-            waitpid(pid, nullptr, 0);
+            int status;
+            waitpid(pid, &status, 0);
+            if (WIFEXITED(status) && WEXITSTATUS(status)==49322) {
+                // if a command in a sequence fails, it's too dangerous to continue execution
+                return;
+            }
 
             // if there were no redirections but an input pipe, it was used instead and now must be closed
             if (!should_take_redirection && input_pipe_set) {
