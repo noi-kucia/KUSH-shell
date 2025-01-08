@@ -6,5 +6,6 @@
 #define SHELL_H
 
 #define VERSION "0.5.2"
+#define LINE_END '\n'
 
 #endif //SHELL_H
