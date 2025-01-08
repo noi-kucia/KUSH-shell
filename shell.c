@@ -151,6 +151,7 @@ size_t  read_user_command(char *buff, size_t *buffer_size) {
         buff[charc++] = (char)key;
         if (key=='\0') return charc;
     }
+    return 0;
 }
 
 int kush_loop() {
