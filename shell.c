@@ -29,6 +29,7 @@ BAJERY:
 #include "print_utils.h"
 #include "tokens.h"
 #include "executor.h"
+#include "shell.h"
 
 #define READ_BUFFER_SIZE 1024
 
@@ -115,14 +116,47 @@ void prompt() {
 }
 
 size_t  read_user_command(char *buff, size_t *buffer_size) {
-    /* reads the user input */
-    return getline(&buff, buffer_size, stdin);;
+    /* Reads the user input character by character updating the buffer in live mode.
+     * Returns a number of characters in the buffer when \n character is entered.
+     * If a special key is pressed (like arrows), it won't be added to the buffer
+     * but the corresponding callback function will be invoked.
+     */
+
+    int key;
+    size_t charc = 0;
+    while ((key=getchar())) {
+
+        if (key==LINE_END) {
+            key = '\0';
+        }
+
+        // processing special keys
+        switch (key) {
+            case ARROW_UP:
+                cprintnl("ARROW UP", Colors.PURPLE);
+                ;
+                break;
+            case ARROW_DOWN:
+                ;
+                break;
+            default:
+                break;
+        }
+
+        // appending it to the buffer
+        if (charc >= *buffer_size) {
+            perror("Buffer size is to small, unable to read a character to it");
+            exit(72);
+        }
+        buff[charc++] = (char)key;
+        if (key=='\0') return charc;
+    }
 }
 
 int kush_loop() {
     // allocating a buffer to read the user input
     size_t buffer_size = READ_BUFFER_SIZE;
-    size_t input_len = 0;
+    size_t chars_read = 0;
     char *read_buff = malloc(buffer_size);
     if (read_buff == nullptr) {
         error_message("Unable to allocate memory for read buffer");
@@ -131,8 +165,7 @@ int kush_loop() {
 
     while (true) {
         prompt(); // printing the prompt
-        input_len = read_user_command(read_buff, &buffer_size); // reading command
-        read_buff[input_len-1] = '\0';  // removing the last nl character
+        chars_read = read_user_command(read_buff, &buffer_size); // reading command
         struct token ** tokens = get_tokens_safe(read_buff); // tokenizing command
         if (tokens){
             execute_sequence(tokens); // executing command
