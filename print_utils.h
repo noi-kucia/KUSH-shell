@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include "shell.h"
 
 typedef struct{
     const char* WHITE;
