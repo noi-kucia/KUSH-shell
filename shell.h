@@ -8,4 +8,10 @@
 #define VERSION "0.5.2"
 #define LINE_END '\n'
 
+#define ARROW_LEFT 37
+#define ARROW_UP 38
+#define ARROW_RIGHT 39
+#define ARROW_DOWN 40
+
+
 #endif //SHELL_H
