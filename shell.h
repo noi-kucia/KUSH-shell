@@ -8,6 +8,8 @@
 #define VERSION "0.5.2"
 #define LINE_END '\n'
 
+#define ESC 27
+#define DEL 127
 #define ARROW_LEFT 37
 #define ARROW_UP 38
 #define ARROW_RIGHT 39

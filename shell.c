@@ -121,27 +121,39 @@ size_t  read_user_command(char *buff, size_t *buffer_size) {
      * If a special key is pressed (like arrows), it won't be added to the buffer
      * but the corresponding callback function will be invoked.
      */
-
-    int key;
+    char key;
     size_t charc = 0;
-    while ((key=getchar())) {
-
+    while (true) {
+        disable_icanon();
+        read(STDIN_FILENO, &key, 1);  // reading the character
+        disable_icanon();
         if (key==LINE_END) {
             key = '\0';
         }
 
-        // processing special keys
+        // Processing special keys.
+        // These symbols won't be displayed and added to the buffer
+        bool is_special = true;
         switch (key) {
-            case ARROW_UP:
-                cprintnl("ARROW UP", Colors.PURPLE);
-                ;
+            case DEL:
+                if (charc <= 0) break;  // to prevent erasing of a non-user printed text
+                printf("\b \b");
+                charc--;
                 break;
-            case ARROW_DOWN:
-                ;
+            case ESC:
+            // case ARROW_UP:
+            //     cprintnl("ARROW UP", Colors.PURPLE);
+            //     ;
+            //     break;
+            // case ARROW_DOWN:
+            //     ;
+            //     break;
                 break;
             default:
+                is_special = false;
                 break;
         }
+        if (is_special) continue;
 
         // appending it to the buffer
         if (charc >= *buffer_size) {
@@ -149,9 +161,12 @@ size_t  read_user_command(char *buff, size_t *buffer_size) {
             exit(72);
         }
         buff[charc++] = (char)key;
-        if (key=='\0') return charc;
+        printf("%c", key); // displaying it
+        if (key=='\0') {
+            printf("\n");
+            return charc;
+        }
     }
-    return 0;
 }
 
 int kush_loop() {
