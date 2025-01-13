@@ -76,6 +76,15 @@ void builtin_exit() {
     exit(EXIT_SUCCESS);
 }
 
+void builtin_history() {
+    printf("HISTORY:\n");
+    for (int i=0;i<history_size;i++) {
+        printf("%d. ", i+1);
+        printf("%s\n", history[i]);
+    }
+    printf("\n");
+}
+
 void execute_sequence(struct token **sequence) {
     /* Takes a pointer to a sequence of token pointers as argument
      * and executes is as command.
@@ -131,6 +140,10 @@ void execute_sequence(struct token **sequence) {
             }
             if (strcmp(command_name, "exit")==0) {
                 builtin_exit();
+                continue;
+            }
+            if (strcmp(command_name, "history")==0) {
+                builtin_history();
                 continue;
             }
 
