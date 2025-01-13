@@ -17,5 +17,9 @@
 #define ARROW_DOWN 'B'
 #define TAB '\t'
 
+#define HISTORY_MAX_SIZE 50
+extern size_t history_size;
+extern char *history[HISTORY_MAX_SIZE];
+
 
 #endif //SHELL_H
