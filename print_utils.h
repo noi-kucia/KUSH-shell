@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "shell.h"
+#include <termios.h>
 
 typedef struct{
     const char* WHITE;
@@ -29,6 +30,8 @@ void cprint(const char *text, const char *color);
 void error_message(const char *mesg);
 void error_emph_message(const char *mesg, __uint16_t start, __uint16_t end);
 void error_emph_prefix(const char *prefix, const char *mesg, __uint16_t start, __uint16_t end);
+void disable_icanon();
+void enable_icanon();
 
 
 #endif //PRINT_UTILS_H

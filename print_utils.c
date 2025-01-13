@@ -51,3 +51,24 @@ void error_emph_prefix(const char *prefix, const char *mesg, __uint16_t start, _
     sprintf(text, "%s%s\0", prefix, mesg);
     error_emph_message(text, preflen+start, preflen+end);
 }
+
+struct termios old = {0};
+
+void disable_icanon() {
+    fflush(stdout);
+    if(tcgetattr(0, &old) < 0)
+        perror("tcsetattr()");
+    old.c_lflag &= ~ICANON;
+    old.c_lflag &= ~ECHO;
+    old.c_cc[VMIN] = 1;
+    old.c_cc[VTIME] = 0;
+    if(tcsetattr(0, TCSANOW, &old) < 0)
+        perror("tcsetattr ICANON");
+}
+
+void enable_icanon() {
+    old.c_lflag |= ICANON;
+    old.c_lflag |= ECHO;
+    if(tcsetattr(0, TCSADRAIN, &old) < 0)
+        perror("tcsetattr ~ICANON");
+}
