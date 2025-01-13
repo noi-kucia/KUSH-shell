@@ -9,6 +9,7 @@ BAJERY:
 3) escape character (backslash) support
 4) strongly protected from allocation errors
 5) error emphasizing
+6) built-in history and  navigating in it with arrows
 */
 
 // standard libs
@@ -34,6 +35,8 @@ BAJERY:
 #define READ_BUFFER_SIZE 1024
 
 const char* HOME_PATH = "";  // is set in prepare function
+size_t history_size = 0;
+char *history[HISTORY_MAX_SIZE];
 
 void print_greetings(void){
     printf(" \n");
@@ -179,6 +182,18 @@ size_t  read_user_command(char *buff, size_t *buffer_size) {
         buff[charc++] = (char)key;
         printf("%c", key); // displaying it
         if (key=='\0') {
+            // appending command to the history
+            if (history_size >= HISTORY_MAX_SIZE) {
+                free(history[0]);
+                for (int i=1;i<HISTORY_MAX_SIZE;i++) history[i-1] = history[i];
+                history_size--;
+            }
+            char *command = malloc(charc+1);
+            strncpy(command, buff, charc);
+            command[charc] = '\0';
+            history[history_size++] = command;
+
+            // printing nl and returning
             printf("\n");
             return charc;
         }
@@ -210,6 +225,7 @@ int kush_loop() {
 
 void prepare() {
     HOME_PATH = getenv("HOME");
+    history_size = 0;
 }
 
 int main(void){
