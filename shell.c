@@ -139,19 +139,35 @@ size_t  read_user_command(char *buff, size_t *buffer_size) {
                 if (charc <= 0) break;  // to prevent erasing of a non-user printed text
                 printf("\b \b");
                 charc--;
-                break;
+            break;
             case ESC:
-            // case ARROW_UP:
-            //     cprintnl("ARROW UP", Colors.PURPLE);
-            //     ;
-            //     break;
-            // case ARROW_DOWN:
-            //     ;
-            //     break;
+                disable_icanon();
+                read(STDIN_FILENO, &key, 1);
+                if (key!=LSQUARE) {
+                    error_message("Unknown escape sequence on input (no square brace was found after \033)");
+                    exit(127);
+                }
+                read(STDIN_FILENO, &key, 1);
+                disable_icanon();
+                switch (key) {
+                    case ARROW_UP:
+                        // TODO: history
+
+                    break;
+                    case ARROW_DOWN:
+                        // TODO: history
+                    break;
+                    default:
+                        // error_message("Unknown escape sequence on input (after \\033[)");
+                        break;
+                }
                 break;
+            case TAB:
+                // TODO: autocomletion
+            break;
             default:
                 is_special = false;
-                break;
+            break;
         }
         if (is_special) continue;
 
