@@ -10,10 +10,12 @@
 
 #define ESC 27
 #define DEL 127
-#define ARROW_LEFT 37
-#define ARROW_UP 38
-#define ARROW_RIGHT 39
-#define ARROW_DOWN 40
+#define LSQUARE '['
+#define ARROW_LEFT 'D'
+#define ARROW_UP 'A'
+#define ARROW_RIGHT 'C'
+#define ARROW_DOWN 'B'
+#define TAB '\t'
 
 
 #endif //SHELL_H
