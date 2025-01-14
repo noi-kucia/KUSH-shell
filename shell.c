@@ -37,6 +37,8 @@ BAJERY:
 const char* HOME_PATH = "";  // is set in prepare function
 size_t history_size = 0;
 char *history[HISTORY_MAX_SIZE];
+bool in_history_mode = false;
+size_t current_history_index = 0;
 
 void print_greetings(void){
     printf(" \n");
@@ -118,6 +120,49 @@ void prompt() {
     free(path);
 }
 
+void history_append(char *buff, size_t charc) {
+    if (history_size >= HISTORY_MAX_SIZE) {
+        free(history[0]);
+        for (int i=1;i<HISTORY_MAX_SIZE;i++) history[i-1] = history[i];
+        history_size--;
+    }
+    char *command = malloc(charc+1);
+    strncpy(command, buff, charc);
+    command[charc] = '\0';
+    history[history_size++] = command;
+}
+
+void history_mode_disable() {
+    if (in_history_mode && history_size>0) {
+        history_size--;
+        free(history[history_size]);
+    }
+    in_history_mode = false;
+    current_history_index = 0;
+}
+
+void history_up(char *buff, size_t *charc) {
+    in_history_mode = true;
+    if (current_history_index) {  // erasing previously printed history command
+        erase_terminal(strlen(history[history_size-current_history_index-1]));
+    }
+    if (current_history_index < history_size-1) current_history_index++;
+    printf((history[history_size-current_history_index-1]));
+    strcpy(buff, history[history_size-current_history_index-1]);
+    *charc = strlen(buff);
+}
+
+void history_down(char *buff, size_t *charc) {
+    if (current_history_index > 0) {
+        erase_terminal(strlen(history[history_size-current_history_index-1]));
+        current_history_index--;
+        printf((history[history_size-current_history_index-1]));
+        strcpy(buff, history[history_size-current_history_index-1]);
+        *charc = strlen(buff);
+        if (!current_history_index) history_mode_disable();
+    }
+}
+
 size_t  read_user_command(char *buff, size_t *buffer_size) {
     /* Reads the user input character by character updating the buffer in live mode.
      * Returns a number of characters in the buffer when \n character is entered.
@@ -129,7 +174,7 @@ size_t  read_user_command(char *buff, size_t *buffer_size) {
     while (true) {
         disable_icanon();
         read(STDIN_FILENO, &key, 1);  // reading the character
-        disable_icanon();
+        enable_icanon();
         if (key==LINE_END) {
             key = '\0';
         }
@@ -151,14 +196,18 @@ size_t  read_user_command(char *buff, size_t *buffer_size) {
                     exit(127);
                 }
                 read(STDIN_FILENO, &key, 1);
-                disable_icanon();
+                enable_icanon();
                 switch (key) {
                     case ARROW_UP:
-                        // TODO: history
-
+                        if (!in_history_mode) {
+                            in_history_mode = true;
+                            history_append(buff, charc);
+                            erase_terminal(charc);
+                        }
+                        history_up(buff, &charc);
                     break;
                     case ARROW_DOWN:
-                        // TODO: history
+                        history_down(buff, &charc);
                     break;
                     default:
                         // error_message("Unknown escape sequence on input (after \\033[)");
@@ -180,20 +229,11 @@ size_t  read_user_command(char *buff, size_t *buffer_size) {
             exit(72);
         }
         buff[charc++] = (char)key;
+        history_mode_disable();
         printf("%c", key); // displaying it
         if (key=='\0') {
-            // appending command to the history
-            if (history_size >= HISTORY_MAX_SIZE) {
-                free(history[0]);
-                for (int i=1;i<HISTORY_MAX_SIZE;i++) history[i-1] = history[i];
-                history_size--;
-            }
-            char *command = malloc(charc+1);
-            strncpy(command, buff, charc);
-            command[charc] = '\0';
-            history[history_size++] = command;
-
             // printing nl and returning
+            history_append(buff, charc);  // appending command to the history
             printf("\n");
             return charc;
         }

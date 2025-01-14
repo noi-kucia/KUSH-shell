@@ -19,6 +19,7 @@
 
 #define HISTORY_MAX_SIZE 50
 extern size_t history_size;
+extern bool in_history_mode;
 extern char *history[HISTORY_MAX_SIZE];
 
 
