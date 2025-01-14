@@ -32,6 +32,7 @@ void error_emph_message(const char *mesg, __uint16_t start, __uint16_t end);
 void error_emph_prefix(const char *prefix, const char *mesg, __uint16_t start, __uint16_t end);
 void disable_icanon();
 void enable_icanon();
+void erase_terminal(size_t n);
 
 
 #endif //PRINT_UTILS_H

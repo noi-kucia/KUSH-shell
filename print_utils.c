@@ -72,3 +72,8 @@ void enable_icanon() {
     if(tcsetattr(0, TCSADRAIN, &old) < 0)
         perror("tcsetattr ~ICANON");
 }
+
+void erase_terminal(size_t n) {
+    /* erases n characters from terminal */
+    for (int i=0;i<n;i++) printf("\b \b");
+}
