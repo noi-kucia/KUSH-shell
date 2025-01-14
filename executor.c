@@ -57,17 +57,20 @@ void builtin_help() {
     printf("\n");
     cprintnl("useful features:", Colors.GREEN);
     printf("* In paths tilda (~) will be replaces with HOME environmental variable path if stands as a first symbol and before a slash (/)\n");
-    printf("   for instancebuiltin_exit:  ~/Desktop/homework.png -> /home/user/homework.png");
+    printf("  for instance builtin_exit:  ~/Desktop/homework.png -> /home/user/homework.png\n");
     printf("* The tokens (arguments and commands) are split by white characters or operators like pipe.\n"
-           "But if you wanna use one of them or just put some huge text, you can use quotes (both ' and \").\n"
-           "The content inside it will be interpreted as a singletoken.");
+           "  But if you wanna use one of them or just put some huge text, you can use quotes (both ' and \").\n"
+           "  The content inside it will be interpreted as a singletoken.");
     printf("* To avoid using quotes, you may use escape characters starting with a backslash.\n"
            "    available characters are: \\\\\\ \\n\\r\\v\\t\\b\\f\\'\\\" \n"
-           "for instance: cd ~/home\\ work/asian/calculus.png\n");
+           "    for instance: cd ~/home\\ work/asian/calculus.png\n"
+           "* vertical arrows can be used to navigate in previously used commands.\n  By default history size has a limit "
+           "of 50 elements.");
     printf("\n");
     cprintnl("built-ins:", Colors.PURPLE);
     printf("* help - command you are using rn\n");
-    printf("* cd [path] - command used to change current working directory to path or to the home path if it wasn't specified.");
+    printf("* cd [path] - command used to change current working directory to path or to the home path if it wasn't specified.\n"
+           "* history - command to print list of previously used commands.");
     printf("\n\n");
 }
 
