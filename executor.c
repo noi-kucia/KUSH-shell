@@ -55,7 +55,7 @@ void builtin_help() {
     printf("The stdout of those commands is joined, so if it is redirected by a pipe operator,\n");
     printf("the next command (with not redirected input) will receive on stdin stdout1+stdout2+stdout3.\n");
     printf("\n");
-    cprintnl("usefull features:", Colors.GREEN);
+    cprintnl("useful features:", Colors.GREEN);
     printf("* In paths tilda (~) will be replaces with HOME environmental variable path if stands as a first symbol and before a slash (/)\n");
     printf("   for instancebuiltin_exit:  ~/Desktop/homework.png -> /home/user/homework.png");
     printf("* The tokens (arguments and commands) are split by white characters or operators like pipe.\n"
@@ -79,7 +79,7 @@ void builtin_exit() {
 void builtin_history() {
     printf("HISTORY:\n");
     for (int i=0;i<history_size;i++) {
-        printf("%d. ", i+1);
+        printf("%d. ", history_size-i);
         printf("%s\n", history[i]);
     }
     printf("\n");
@@ -219,7 +219,7 @@ void execute_sequence(struct token **sequence) {
                 char msg[0xFF];
                 sprintf(msg, "exec failure of [%s]", command_name);
                 perror(msg);
-                _exit(49322);
+                _exit(170);
 
             }
 
