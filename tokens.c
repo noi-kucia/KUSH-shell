@@ -12,7 +12,7 @@
 
 const char *token_type_names[] = {"error", "unknown token", "unfinished sequence", "empty", "command term", "semicolon", "pipe",
 "input redirect", "output redirect", "output redirect append", "end"};
-const char *command_allowed_symbols = "./~_()-#%^[]+:";
+const char *command_allowed_symbols = "./~_()-#%^[]+:'\"";
 const char *escape_chars = "\\ nrvtbf'\"";
 const char *white_characters = " \t\r\n\v\f";
 const char *term_terminate_symbols = "|;<>";
@@ -31,13 +31,15 @@ struct token next_token_safe(const tchar_t *command) {
 
     struct token token = {token_error, command, 1};
     if (command==NULL) return token;
-    const tchar_t *src = command;
+    tchar_t *src = (tchar_t*)command;
     bool token_found = false;
 
 
     while (*src) {  // looking for token start
         token.src = src;
+        tchar_t *quote = *src=='\'' || *src=='"' ?  src : nullptr;
         tchar_t sym = *src++;
+
 
         // checking whether symbol is a white character or not
         if (strchr(white_characters, sym)) {
@@ -46,18 +48,6 @@ struct token next_token_safe(const tchar_t *command) {
         }
 
         // extracting the token depending on the first character
-        // interpreting quotes content as command term
-        if (sym == '"' || sym == '\'') {
-            token.type = token_commandterm;
-            while (*(src++)!=sym && *src) token.length++;
-            if (!*src && *(src-1)!=sym) { // if no closing quote found
-                token.type = token_unfinished;
-                token.length = src - token.src;
-                error_emph_prefix("Unclosed quote has been found - ", token.src, 0, token.length);
-            }
-            else token.length++; // adding closing quote to length
-        }
-
         // command terms itself
         else if (isalnum(sym) || strchr(command_allowed_symbols, sym)!=NULL) {
             token.type = token_commandterm;
@@ -67,6 +57,12 @@ struct token next_token_safe(const tchar_t *command) {
                 // normal characters
                 if (!*src) break;
                 if (isalnum(*src) ||  strchr(command_allowed_symbols, *src)!=NULL) {
+                    if (quote==nullptr && (*src=='\'' || *src=='"')) quote = src;
+                    if (quote!=nullptr && *quote==*src) quote = nullptr;
+                    token.length++;
+                    src++;
+                }
+                else if (*src==' ' && quote!=nullptr) {
                     token.length++;
                     src++;
                 }
@@ -278,6 +274,58 @@ char **get_argument_names(struct token **command) {
     }
     arg_names[argc] = nullptr;
     return arg_names;
+}
+
+char *process_name(char *name) {
+    /* Takes a pointer to name (must be allocated by malloc)
+     * Replaces ~/ as $HOME/ in path names
+     * Replaces all escape combinations with corresponding symbols
+     * Removes outer quotes if they present
+     */
+
+    if (name==NULL) return nullptr;
+
+    // crating copy of the name
+    char *new_name = malloc(strlen(name)+1);
+    strcpy(new_name, name);
+
+    // processing tildes
+    if (*new_name=='~' && (*(new_name+1)=='/' || *(new_name+1)=='\0')) {
+            char *home_path =  getenv("HOME");
+            const size_t new_size = strlen(home_path) + strlen(new_name) + 1;
+            if ((new_name=realloc(new_name, new_size))==nullptr) {
+                perror("allocation failed");
+                exit(177);
+            }
+            snprintf(new_name, new_size, "%s%s", home_path, name+1);
+    }
+
+    // processing quotes and escape characters
+    char *quote = nullptr;
+    char *src = new_name;
+    while (*src) {
+        // going through each symbol and checking whether it's a backslash, quote or other
+
+        if (*src=='"' || *src=='\'') {
+            if (quote==nullptr) quote=src;
+            else if(*quote==*src) {
+                // removing both
+                strcpy(src, src+1); // removing closing quote
+                strcpy(quote, quote+1);
+
+                src -= 2;  // shifting pointer 2 characters back because of 2 removed chars
+                quote = nullptr;
+            }
+        }
+        else if (*src=='/') {
+
+        }
+
+        src++;
+    }
+
+    free(name);
+    return new_name;
 }
 
 char **get_names_after_token(struct token **command, enum token_types type) {

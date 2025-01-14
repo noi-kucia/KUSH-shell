@@ -26,7 +26,7 @@ int builtin_cd(char **arguments) {
                 snprintf(path, sizeof path, "%s%s", getenv("HOME"), arguments[1]+1);
             }
             else {
-                perror("unsupported sytax");
+                perror("unsupported syntax");
                 return 9191;
             }
         }
@@ -82,7 +82,7 @@ void builtin_exit() {
 void builtin_history() {
     printf("HISTORY:\n");
     for (int i=0;i<history_size;i++) {
-        printf("%d. ", history_size-i);
+        printf("%ld. ", history_size-i);
         printf("%s\n", history[i]);
     }
     printf("\n");
@@ -111,13 +111,14 @@ void execute_sequence(struct token **sequence) {
         for (struct token **command=segment;command!=nullptr;command=get_next_command(command)) {
 
             // getting command arguments
-            // TODO: All argument names must be processed to replace ~ by $HOME, delete quotes and replace escape characters
-            // TODO: I think it should be done within function that creates token of commandterm type
             char **arguments;
             if((arguments=get_argument_names(command)) == nullptr) {
                 perror("unable to get arguments");
                 exit(22);
             }
+
+            // processing them
+            for(int i=0;arguments[i]!=nullptr;i++) arguments[i]=process_name(arguments[i]);
             const char *command_name = arguments[0];
             if (command_name == nullptr) continue;  // ignoring empty commands
 

@@ -37,6 +37,7 @@ struct token **get_next_command(struct token **prev_command);
 struct token **get_arguments(struct token **command);
 char **get_names_after_token(struct token **command, enum token_types type);
 char **get_argument_names(struct token **command);
+char *process_name(char *name);
 
 
 #endif //TOKENS_H
