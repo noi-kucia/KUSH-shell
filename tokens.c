@@ -56,9 +56,9 @@ struct token next_token_safe(const tchar_t *command) {
             while (true) {
                 // normal characters
                 if (!*src) break;
-                if (isalnum(*src) ||  strchr(command_allowed_symbols, *src)!=NULL) {
+                if (isalnum(*src) ||  strchr(command_allowed_symbols, *src)!=NULL || quote!=nullptr) {
                     if (quote==nullptr && (*src=='\'' || *src=='"')) quote = src;
-                    if (quote!=nullptr && *quote==*src) quote = nullptr;
+                    if (quote!=nullptr && *quote==*src && quote!=src) quote = nullptr;
                     token.length++;
                     src++;
                 }
@@ -90,6 +90,10 @@ struct token next_token_safe(const tchar_t *command) {
                 }
                 else {
                     if (strchr(white_characters, *src)!=NULL || strchr(term_terminate_symbols, *src)!=NULL) break;
+                    if (quote!=nullptr) {
+                        token.length++;
+                        src++;
+                    }
                     else {
                         error_emph_prefix("Forbiden character has been found - ", token.src, token.length, token.length+1);
                         token.type = token_error;
@@ -317,8 +321,45 @@ char *process_name(char *name) {
                 quote = nullptr;
             }
         }
-        else if (*src=='/') {
+        else if (*src=='\\') {
+            tchar_t escchar;
+            switch (*(src+1)) {
+                case ' ':
+                    escchar=' ';
+                break;
+                case 'n':
+                    escchar = '\n';
+                break;
+                case 't':
+                    escchar = '\t';
+                break;
+                case '\\':
+                    escchar = '\\';
+                break;
+                case 'r':
+                    escchar = '\r';
+                break;
+                case 'v':
+                    escchar = '\v';
+                break;
+                case 'b':
+                    escchar = '\b';
+                break;
+                case 'f':
+                    escchar = '\f';
+                break;
+                case '\'':
+                    escchar = '\'';
+                break;
+                case '\"':
+                    escchar = '"';
+                break;
+                default:
+                    escchar = '?';
+            }
 
+            *src = escchar;
+            strcpy(src+2, src+1);
         }
 
         src++;
