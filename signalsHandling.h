@@ -11,6 +11,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-
+void start_signal_handling();
 
 #endif //SIGNALSHANDLING_H

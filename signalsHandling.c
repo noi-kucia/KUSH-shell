@@ -11,6 +11,7 @@ void on_sigint(int sig) {
         if (kill(subprocess_pid, SIGINT) == -1) {
             perror("Failed to redirect SIGINT to subprocess");
         }
+        printf("\nProcess %d was killed\n", subprocess_pid);
     }
 }
 
@@ -20,6 +21,7 @@ void on_sigstop(int sig) {
         if (kill(subprocess_pid, SIGTSTP) == -1) {
             perror("Failed to redirect SIGTSTP to subprocess");
         }
+        printf("\nProcess %d was stopped\n", subprocess_pid);
     }
 }
 

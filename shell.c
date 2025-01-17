@@ -11,7 +11,8 @@ BAJERY:
 5) error emphasizing
 6) built-in history and  navigating in it with arrows
 7) screen clearing on clear or ctrl+L
-8) signal handling (ctrl+C and ctrl+Z which is can't be caught while running in the terminal)
+8) signal handling (ctrl+C and ctrl+Z)
+9) autocompletion on tab
 */
 
 // standard libs
@@ -378,6 +379,7 @@ int kush_loop() {
 void prepare() {
     HOME_PATH = getenv("HOME");
     history_size = 0;
+    start_signal_handling();
 }
 
 int main(void){
