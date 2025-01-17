@@ -70,7 +70,8 @@ void builtin_help() {
     cprintnl("built-ins:", Colors.PURPLE);
     printf("* help - command you are using rn\n");
     printf("* cd [path] - command used to change current working directory to path or to the home path if it wasn't specified.\n"
-           "* history - command to print list of previously used commands.");
+           "* history - command to print list of previously used commands.\n"
+           "* clear - same as ctrl+L clears the console.");
     printf("\n\n");
 }
 
@@ -86,6 +87,10 @@ void builtin_history() {
         printf("%s\n", history[i]);
     }
     printf("\n");
+}
+
+void builtin_clear() {
+    printf("\033[2J\033[H");
 }
 
 void execute_sequence(struct token **sequence) {
@@ -148,6 +153,10 @@ void execute_sequence(struct token **sequence) {
             }
             if (strcmp(command_name, "history")==0) {
                 builtin_history();
+                continue;
+            }
+            if (strcmp(command_name, "clear")==0) {
+                builtin_clear();
                 continue;
             }
 
