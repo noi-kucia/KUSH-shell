@@ -26,21 +26,35 @@ BAJERY:
 #include <time.h>
 #include <regex.h>
 #include <errno.h>
+#include <dirent.h>
 
 // local includes
 #include "print_utils.h"
 #include "tokens.h"
 #include "executor.h"
 #include "shell.h"
+
+#include <ctype.h>
+
 #include "signalsHandling.h"
 
 #define READ_BUFFER_SIZE 1024
 
 const char* HOME_PATH = "";  // is set in prepare function
+
+// history
 size_t history_size = 0;
 char *history[HISTORY_MAX_SIZE];
 bool in_history_mode = false;
 size_t current_history_index = 0;
+
+// autocompletion
+bool in_autocomplete_mode = false;
+uint16_t ac_ind = 0;
+uint16_t previously_printed_chars = 0;
+size_t ac_entries = 0;
+char **ac_names = nullptr;
+char *ac_prefix = nullptr;
 
 void print_greetings(void){
     printf(" \n");
@@ -143,7 +157,7 @@ void history_mode_disable() {
     current_history_index = 0;
 }
 
-void history_up(char *buff, size_t *charc) {
+void history_up(char *buff, int *charc) {
     in_history_mode = true;
     if (current_history_index) {  // erasing previously printed history command
         erase_terminal(strlen(history[history_size-current_history_index-1]));
@@ -154,7 +168,7 @@ void history_up(char *buff, size_t *charc) {
     *charc = strlen(buff);
 }
 
-void history_down(char *buff, size_t *charc) {
+void history_down(char *buff, int *charc) {
     if (current_history_index > 0) {
         erase_terminal(strlen(history[history_size-current_history_index-1]));
         current_history_index--;
@@ -165,6 +179,104 @@ void history_down(char *buff, size_t *charc) {
     }
 }
 
+
+void autocomplete_mode_enable(const char *buff, int *charc) {
+
+    if (in_autocomplete_mode) return;
+    erase_terminal(*charc);
+
+    ac_ind = 0;
+    in_autocomplete_mode = true;
+    previously_printed_chars = 0;
+    ac_prefix = malloc(*charc+1);
+    if (ac_prefix==nullptr) {
+        error_message("Failed to allocate memory for autocomplete mode");
+        exit(714);
+    }
+    strncpy(ac_prefix, buff, *charc);
+    ac_prefix[*charc] = '\0';
+
+    // Open the current working directory
+    DIR *dir = opendir(".");
+    struct dirent *entry;
+    if (dir == NULL) {
+        perror("Failed to open current directory");
+        return;
+    }
+
+    // dumping all appropriate names into an array
+    size_t arrsize = 0xF, arrc = 0;
+    typeof(ac_names) newarr;
+
+    // extracting the last word (pattern)
+    char pattern[128];
+    if (*charc) {
+        int end = *charc - 1; // Start from the end of buff
+        while (end >= 0 && isspace(buff[end]))  end--; // Skip trailing spaces
+        int start = end;
+        while (start >= 0 && !isspace(buff[start])) start--; // Find the beginning of the last word
+        start++;
+        strncpy(pattern, buff+start, end-start+1);
+    }
+
+
+    ac_names = malloc(arrsize * sizeof(char *));
+    while ((entry = readdir(dir)) != NULL) {
+        if (!*charc || strncmp(entry->d_name, pattern, strlen(buff)) == 0) {
+            if (arrc >= arrsize) {
+                arrsize <<= 1;
+                newarr = realloc(ac_names, arrsize * sizeof(char *));
+                if (newarr==NULL) {
+                    error_message("Failed to allocate memory for the array");
+                    exit(821);
+                }
+                ac_names = newarr;
+            }
+            ac_names[arrc++] = strdup(entry->d_name);
+        }
+    }
+
+    closedir(dir); // Close the directory
+    ac_entries = arrc;
+    *charc = strlen(ac_prefix);
+
+    printf("%s", ac_prefix);
+}
+
+void autocomplete_mode_disable() {
+    ac_ind = 0;
+    previously_printed_chars = 0;
+    in_autocomplete_mode = false;
+    if (ac_names && ac_entries) {
+        for(int i=0;i<ac_entries;i++) free(*(ac_names+i));
+        free(ac_names);
+    }
+    ac_entries = 0;
+    ac_names = nullptr;
+    if (ac_prefix!=nullptr) free(ac_prefix);
+    ac_prefix = nullptr;
+}
+
+void autocomplete_mode_exit(int *charc) {
+    int erased_symbols = previously_printed_chars + (*charc&&!previously_printed_chars)?1:0;
+    erase_terminal(erased_symbols);
+    *charc -= erased_symbols;
+    autocomplete_mode_disable();
+}
+
+void autocomplete(const char *buff, int *charc) {
+
+    erase_terminal(previously_printed_chars);
+    *charc -= previously_printed_chars;
+    if (!in_autocomplete_mode) autocomplete_mode_enable(buff, charc);
+    if (ac_entries) {
+        const char *entry = ac_names[(ac_ind++)%ac_entries];
+        strcpy(buff+(*charc), entry);
+        *charc += previously_printed_chars = strlen(entry);
+        printf("%s", entry);
+    }
+}
+
 size_t  read_user_command(char *buff, size_t *buffer_size) {
     /* Reads the user input character by character updating the buffer in live mode.
      * Returns a number of characters in the buffer when \n character is entered.
@@ -172,7 +284,7 @@ size_t  read_user_command(char *buff, size_t *buffer_size) {
      * but the corresponding callback function will be invoked.
      */
     char key;
-    size_t charc = 0;
+    int charc = 0;
     while (true) {
         disable_icanon();
         read(STDIN_FILENO, &key, 1);  // reading the character
@@ -186,6 +298,10 @@ size_t  read_user_command(char *buff, size_t *buffer_size) {
         bool is_special = true;
         switch (key) {
             case DEL:
+                if (in_autocomplete_mode) {
+                    autocomplete_mode_exit(&charc);
+                    break;
+                }
                 if (charc <= 0) break;  // to prevent erasing of a non-user printed text
                 printf("\b \b");
                 charc--;
@@ -217,10 +333,12 @@ size_t  read_user_command(char *buff, size_t *buffer_size) {
                 }
                 break;
             case TAB:
-                // TODO: autocomletion
+                autocomplete(buff, &charc);
             break;
             default:
                 is_special = false;
+                history_mode_disable();
+                autocomplete_mode_disable();
             break;
         }
         if (is_special) continue;
@@ -231,7 +349,6 @@ size_t  read_user_command(char *buff, size_t *buffer_size) {
             exit(72);
         }
         buff[charc++] = (char)key;
-        history_mode_disable();
         printf("%c", key); // displaying it
         if (key=='\0') {
             // printing nl and returning

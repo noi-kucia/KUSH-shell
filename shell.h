@@ -5,6 +5,8 @@
 #ifndef SHELL_H
 #define SHELL_H
 
+#include <stdint.h>
+
 #define VERSION "0.6.0"
 #define LINE_END '\n'
 
@@ -21,6 +23,13 @@
 extern size_t history_size;
 extern bool in_history_mode;
 extern char *history[HISTORY_MAX_SIZE];
+
+extern bool in_autocomplete_mode;
+extern uint16_t ac_ind;
+extern uint16_t previously_printed_chars;
+extern size_t ac_entries;
+extern char **ac_names;
+extern char *ac_prefix;
 
 
 #endif //SHELL_H
