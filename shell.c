@@ -183,7 +183,6 @@ void history_down(char *buff, int *charc) {
 void autocomplete_mode_enable(const char *buff, int *charc) {
 
     if (in_autocomplete_mode) return;
-    erase_terminal(*charc);
 
     ac_ind = 0;
     in_autocomplete_mode = true;
@@ -193,8 +192,7 @@ void autocomplete_mode_enable(const char *buff, int *charc) {
         error_message("Failed to allocate memory for autocomplete mode");
         exit(714);
     }
-    strncpy(ac_prefix, buff, *charc);
-    ac_prefix[*charc] = '\0';
+    ac_prefix[0] = '\0';
 
     // Open the current working directory
     DIR *dir = opendir(".");
@@ -209,20 +207,18 @@ void autocomplete_mode_enable(const char *buff, int *charc) {
     typeof(ac_names) newarr;
 
     // extracting the last word (pattern)
-    char pattern[128];
     if (*charc) {
-        int end = *charc - 1; // Start from the end of buff
-        while (end >= 0 && isspace(buff[end]))  end--; // Skip trailing spaces
-        int start = end;
+        int start = *charc - 1; // Start from the end of buff
         while (start >= 0 && !isspace(buff[start])) start--; // Find the beginning of the last word
         start++;
-        strncpy(pattern, buff+start, end-start+1);
+        strncpy(ac_prefix, buff+start, *charc-start);
+        ac_prefix[*charc-start] = '\0';
     }
 
 
     ac_names = malloc(arrsize * sizeof(char *));
     while ((entry = readdir(dir)) != NULL) {
-        if (!*charc || strncmp(entry->d_name, pattern, strlen(buff)) == 0) {
+        if (!*charc || strncmp(entry->d_name, ac_prefix, strlen(ac_prefix)) == 0) {
             if (arrc >= arrsize) {
                 arrsize <<= 1;
                 newarr = realloc(ac_names, arrsize * sizeof(char *));
@@ -238,9 +234,6 @@ void autocomplete_mode_enable(const char *buff, int *charc) {
 
     closedir(dir); // Close the directory
     ac_entries = arrc;
-    *charc = strlen(ac_prefix);
-
-    printf("%s", ac_prefix);
 }
 
 void autocomplete_mode_disable() {
@@ -258,7 +251,7 @@ void autocomplete_mode_disable() {
 }
 
 void autocomplete_mode_exit(int *charc) {
-    int erased_symbols = previously_printed_chars + (*charc&&!previously_printed_chars)?1:0;
+    int erased_symbols = previously_printed_chars + (charc&&!previously_printed_chars?1:0);
     erase_terminal(erased_symbols);
     *charc -= erased_symbols;
     autocomplete_mode_disable();
@@ -269,8 +262,8 @@ void autocomplete(const char *buff, int *charc) {
     erase_terminal(previously_printed_chars);
     *charc -= previously_printed_chars;
     if (!in_autocomplete_mode) autocomplete_mode_enable(buff, charc);
-    if (ac_entries) {
-        const char *entry = ac_names[(ac_ind++)%ac_entries];
+        if (ac_entries) {
+        const char *entry = ac_names[(ac_ind++)%ac_entries]+strlen(ac_prefix);
         strcpy(buff+(*charc), entry);
         *charc += previously_printed_chars = strlen(entry);
         printf("%s", entry);
