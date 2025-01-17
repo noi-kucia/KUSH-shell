@@ -10,6 +10,8 @@ BAJERY:
 4) strongly protected from allocation errors
 5) error emphasizing
 6) built-in history and  navigating in it with arrows
+7) screen clearing on clear or ctrl+L
+8) signal handling (ctrl+C and ctrl+Z which is can't be caught while running in the terminal)
 */
 
 // standard libs
@@ -23,7 +25,6 @@ BAJERY:
 #include <unistd.h>
 #include <time.h>
 #include <regex.h>
-#include <stdbool.h>
 #include <errno.h>
 
 // local includes
@@ -31,6 +32,7 @@ BAJERY:
 #include "tokens.h"
 #include "executor.h"
 #include "shell.h"
+#include "signalsHandling.h"
 
 #define READ_BUFFER_SIZE 1024
 

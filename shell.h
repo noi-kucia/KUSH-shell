@@ -5,7 +5,7 @@
 #ifndef SHELL_H
 #define SHELL_H
 
-#define VERSION "0.5.9"
+#define VERSION "0.6.0"
 #define LINE_END '\n'
 
 #define ESC 27

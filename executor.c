@@ -9,6 +9,7 @@
 #include "shell.h"
 
 extern const char *token_type_names[];
+pid_t subprocess_pid = 0;
 
 int builtin_cd(char **arguments) {
     int res;
@@ -161,12 +162,12 @@ void execute_sequence(struct token **sequence) {
             }
 
             // forking to execute a command
-            const pid_t pid = fork();
-            if (pid < 0) {
+            subprocess_pid = fork();
+            if (subprocess_pid < 0) {
                 perror("fork failure");
                 exit(21);
             }
-            if (pid == 0) {
+            if (subprocess_pid == 0) {
                 // child process
 
                 // replacing stdin
@@ -238,7 +239,7 @@ void execute_sequence(struct token **sequence) {
 
             // waiting for the process end
             int status;
-            waitpid(pid, &status, 0);
+            waitpid(subprocess_pid, &status, 0);
 
             // redirecting output to specified files from opfd
             if (should_redirect_output) {

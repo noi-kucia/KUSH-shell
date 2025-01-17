@@ -12,6 +12,8 @@
 #include <errno.h>
 #include <fcntl.h>
 
+extern pid_t subprocess_pid;
+
 void execute_sequence(struct token**);
 void free_sequence(struct token**);
 
