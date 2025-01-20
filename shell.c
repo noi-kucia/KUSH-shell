@@ -173,7 +173,7 @@ void history_up(char *buff, int *charc) {
 
 void history_down(char *buff, int *charc) {
     if (current_history_index > 0) {
-        erase_terminal(strlen(history[history_size-current_history_index-1]));
+        erase_terminal(*charc);
         current_history_index--;
         printf((history[history_size-current_history_index-1]));
         strcpy(buff, history[history_size-current_history_index-1]);
@@ -299,7 +299,7 @@ size_t  read_user_command(char *buff, size_t *buffer_size) {
         switch (key) {
             case CTRL_L:
                 builtin_clear();
-                charc = 0;
+                charc = previously_printed_chars = 0;
                 prompt();
                 break;
             case DEL:
