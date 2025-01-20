@@ -82,6 +82,8 @@ void print_greetings(void){
     printf(" \n");
 }
 
+extern void builtin_clear();
+
 void prompt() {
     /*     prints a prompt */
 
@@ -291,6 +293,10 @@ size_t  read_user_command(char *buff, size_t *buffer_size) {
         // These symbols won't be displayed and added to the buffer
         bool is_special = true;
         switch (key) {
+            case CTRL_L:
+                builtin_clear();
+                prompt();
+                break;
             case DEL:
                 if (in_autocomplete_mode) {
                     autocomplete_mode_exit(&charc);

@@ -18,6 +18,7 @@
 #define ARROW_RIGHT 'C'
 #define ARROW_DOWN 'B'
 #define TAB '\t'
+#define CTRL_L 12
 
 #define HISTORY_MAX_SIZE 50
 extern size_t history_size;
