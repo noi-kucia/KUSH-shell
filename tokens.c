@@ -35,11 +35,12 @@ struct token next_token_safe(const tchar_t *command) {
     bool token_found = false;
 
 
+    token.src = nullptr;
+    tchar_t *quote = nullptr;
     while (*src) {  // looking for token start
         token.src = src;
-        tchar_t *quote = *src=='\'' || *src=='"' ?  src : nullptr;
+        quote = *src=='\'' || *src=='"' ?  src : nullptr;
         tchar_t sym = *src++;
-
 
         // checking whether symbol is a white character or not
         if (strchr(white_characters, sym)) {
@@ -119,6 +120,7 @@ struct token next_token_safe(const tchar_t *command) {
                         error_emph_prefix("Token '<<' is forbidden - ", token.src, 0, 2);
                     }
                     else token.type = token_inredir;
+                    return token;
                     break;
                 case '>':
                     if (*(src) == '>' && *(src+1)!='>') {
@@ -126,10 +128,12 @@ struct token next_token_safe(const tchar_t *command) {
                         token.length = 2;
                     }
                     else token.type = token_outredir;
+                    return token;
                     break;
                 default:
                     token.type = token_unknown;
                     error_emph_prefix("Unable to detect token type - ", token.src, 0, 3);
+                    return token;
             }
         }
         token_found = true;
@@ -138,6 +142,10 @@ struct token next_token_safe(const tchar_t *command) {
 
     }
     if (!token_found) token.type = token_end;
+    if (quote!=nullptr) {
+        error_emph_prefix("Unterminated quote - ", quote, 0, token.length+1-(uint64_t)quote+(uint64_t)token.src);
+        token.type = token_unknown;
+    }
 
     return token;
 }
