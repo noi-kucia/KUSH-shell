@@ -273,6 +273,10 @@ void autocomplete(const char *buff, int *charc) {
     }
 }
 
+void shell_reset() {
+
+}
+
 size_t  read_user_command(char *buff, size_t *buffer_size) {
     /* Reads the user input character by character updating the buffer in live mode.
      * Returns a number of characters in the buffer when \n character is entered.
@@ -295,6 +299,7 @@ size_t  read_user_command(char *buff, size_t *buffer_size) {
         switch (key) {
             case CTRL_L:
                 builtin_clear();
+                charc = 0;
                 prompt();
                 break;
             case DEL:
