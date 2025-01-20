@@ -359,7 +359,7 @@ char *process_name(char *name) {
             }
 
             *src = escchar;
-            strcpy(src+2, src+1);
+            strcpy(src+1, src+2);
         }
 
         src++;
