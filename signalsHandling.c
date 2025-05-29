@@ -10,6 +10,7 @@ void on_sigint(int sig) {
     if (subprocess_pid > 0) {
         if (kill(subprocess_pid, SIGINT) == -1) {
             perror("Failed to redirect SIGINT to subprocess");
+            subprocess_pid = 0;
         }
         printf("\nProcess %d was killed\n", subprocess_pid);
     }
